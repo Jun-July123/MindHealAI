@@ -44,9 +44,12 @@
           <template #default="scope">
             <!-- 20-2.2 编辑按钮添加点击事件onEditCreate，传递当前行数据scope.row-->
             <el-button @click="onEditCreate(scope.row)" text type="primary" size="mini">编辑</el-button>
-            <el-button v-if="scope.row.status === 0 || scope.row.status === 2" text type="success">发布</el-button>
-            <el-button v-else text type="warning">下线</el-button>
-            <el-button text type="danger">删除</el-button>
+            <!-- 20-4.2 发布按钮添加点击事件onPublish，传递当前行数据scope.row-->
+            <el-button @click="onPublish(scope.row)" v-if="scope.row.status === 0 || scope.row.status === 2" text type="success">发布</el-button>
+            <!-- 20-4.4 下线按钮添加点击事件onOffline，传递当前行数据scope.row-->
+            <el-button @click="onOffline(scope.row)" v-else text type="warning">下线</el-button>
+            <!-- 20-4.7 删除按钮添加点击事件onDelete，传递当前行数据scope.row-->
+            <el-button @click="onDelete(scope.row)" text type="danger">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -80,7 +83,8 @@ import PageHead from '@/components/PageHead.vue'
 import PageSearch from '@/components/PageSearch.vue'
 // 14-1.3 Knowledge组件引入使用categoryTree接口及onMounted、ref
 import {onMounted,reactive,ref} from 'vue'
-import {categoryTree,getKnowledgeArticlePageAPI,getKnowledgeArticleByIdAPI} from '@/api/admin'
+import {categoryTree,getKnowledgeArticlePageAPI,getKnowledgeArticleByIdAPI,putKnowledgeArticleStatusByIdAPI,deleteKnowledgeArticleByIdAPI} from '@/api/admin'
+import {ElMessage,ElMessageBox} from 'element-plus'
 
 // 17-1.2 knowledge定义新增/编辑弹窗显示状态，初始false隐藏弹窗
 const dialogVisible = ref(false)
@@ -142,7 +146,7 @@ const onPaginationChange = (page) => {
   onPageSearch()
 }
 
-// 20-2.3 按钮onEditCreate事件，接收数据
+// 20-2.3 编辑创建按钮onEditCreate事件，接收数据
 const onEditCreate = async (row) => {
 // 20-2.3.1 数据没有文章id,说明是新增文章，将currentArticle.value设置为null，打开弹框
   if(!row.id){
@@ -158,6 +162,58 @@ const onEditCreate = async (row) => {
   }
   
 }
+
+// 20-4.3 发布按钮onPublish事件，接收当前行文章数据
+const onPublish = async (row) => {
+// 20-4.3.1 确认发布弹窗ElMessageBox.confirm
+  ElMessageBox.confirm('确认发布该文章吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info'
+  }).then(async () => {
+    // 20-4.3.2 调用发布文章putKnowledgeArticleStatusByIdAPI接口，传递文章id和状态1为已发布
+  await putKnowledgeArticleStatusByIdAPI(row.id,{
+    status: 1
+  }).then(res => {
+    // 20-4.3.3 发布成功，提示用户发布成功，刷新文章列表
+    ElMessage.success('发布成功')
+    onPageSearch()
+  })
+})}
+
+// 20-4.4 下线按钮onOffline事件，接收当前行文章数据
+const onOffline = async (row) => {
+// 20-4.4.1 确认下线弹窗ElMessageBox.confirm
+  ElMessageBox.confirm('确认下线该文章吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    // 20-4.4.2 调用发布文章putKnowledgeArticleStatusByIdAPI接口，传递文章id和状态2为已下线
+  await putKnowledgeArticleStatusByIdAPI(row.id,{
+    status: 2
+  }).then(res => {
+    // 20-4.4.3 下线成功，提示用户下线成功，刷新文章列表
+    ElMessage.success('下线成功') 
+    onPageSearch()
+  })
+})}
+
+// 20-4.8 删除按钮onDelete事件，接收当前行文章数据
+const onDelete = async (row) => {
+// 20-4.8.1 确认删除弹窗ElMessageBox.confirm
+  ElMessageBox.confirm('确认删除该文章吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'danger'
+  }).then(async () => {
+    // 20-4.8.2 调用删除文章deleteKnowledgeArticleByIdAPI接口，传递文章id
+  await deleteKnowledgeArticleByIdAPI(row.id).then(res => {
+    // 20-4.8.3 删除成功，提示用户删除成功，刷新文章列表
+    ElMessage.success('删除成功')
+    onPageSearch()
+  })
+})}
 
 // 14-1.5 打开页面就调用categoryTree接口，获取分类数据
 onMounted(async () => {

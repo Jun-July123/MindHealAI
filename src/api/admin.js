@@ -72,3 +72,19 @@ export const getKnowledgeArticleByIdAPI= (id) => {
   })
 }
 
+// 20-4.1 api/admin.js配置导出发布文章接口，接收文章id和文章状态data
+export const putKnowledgeArticleStatusByIdAPI = (id,data) => {
+  return service({
+    url: `/knowledge/article/${id}/status`,
+    method: 'put',
+    data,
+  })
+}
+
+// 20-4.6 api/admin.js配置导出删除文章接口，接收文章id
+export const deleteKnowledgeArticleByIdAPI = (id) => {
+  return service({
+    url: `/knowledge/article/${id}`,
+    method: 'delete',
+  })
+}
