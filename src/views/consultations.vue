@@ -10,6 +10,7 @@
           <el-avatar>{{ scope.row.userNickname }}</el-avatar>
         </template>
       </el-table-column>
+
       <!-- 21-1.2.2 设置情绪日志列，插槽接收scope获取当前行数据，显示会话标题和会话最后一条消息内容-->
       <el-table-column label="情绪日志">
         <template #default="scope">
@@ -17,10 +18,13 @@
           <div class="session-preview">{{ scope.row.lastMessageContent }}</div>
         </template>
       </el-table-column>
+
       <!-- 21-1.2.3 设置消息数列，prop接收messageCount，显示会话消息数 -->
       <el-table-column prop="messageCount" label="消息数" width="100" />
+
       <!-- 21-1.2.4 设置时间列，prop接收lastMessageTime，显示会话最后一条消息时间 -->
       <el-table-column prop="lastMessageTime" label="时间" width="200" />  
+      
       <!-- 21-1.2.5 设置操作列，插槽接收scope获取当前行数据，显示详情按钮 -->
       <el-table-column label="操作" width="100">
         <template #default="scope">

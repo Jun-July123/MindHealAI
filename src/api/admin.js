@@ -105,3 +105,12 @@ export const getSessionsByIdMessagesAPI = (id) => {
     method: 'get',
   })
 }
+
+// 22-1.4 api/api/admin.js配置导出情绪日志列表接口，接收params查询参数
+export const getEmotionPageAPI = (params) => {
+  return service({
+    url: '/emotion-diary/admin/page',
+    method: 'get',
+    params
+  })
+}
