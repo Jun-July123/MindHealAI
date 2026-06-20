@@ -88,3 +88,13 @@ export const deleteKnowledgeArticleByIdAPI = (id) => {
     method: 'delete',
   })
 }
+
+// 21-1.3 api/admin.js配置导出咨询记录接口，接收分页参数params
+export const getPsychologicalChatSessionsAPI = (params) => {
+  return service({
+    url: '/psychological-chat/sessions',
+    method: 'get',
+    params:params
+  })
+}
+
