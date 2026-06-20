@@ -49,7 +49,8 @@
         <template #default="scope">
           <!-- 22-2.1 详情按钮注册点击事件，传递当前行数据 -->
           <el-button @click="onDetail(scope.row)" type="primary" size="mini" text>详情</el-button>
-          <el-button type="danger" size="mini" text>删除</el-button>
+          <!-- 22-3.2 删除按钮注册点击事件，传递当前日志数据 -->
+          <el-button @click="onDelete(scope.row)" type="danger" size="mini" text>删除</el-button>
         </template>
       </el-table-column>
     </el-table> 
@@ -193,7 +194,7 @@
 import { ref, onMounted, reactive } from 'vue'
 import pageHead from '@/components/pageHead.vue'
 import pageSearch from '@/components/pageSearch.vue'
-import { getEmotionPageAPI} from '@/api/admin.js'
+import { getEmotionPageAPI, deleteEmotionAPI } from '@/api/admin.js'
 
 
 const formItem = [
@@ -321,6 +322,21 @@ const getRiskLevelText = (riskLevel) => {
   return riskTextMap[riskLevel] || '未知风险等级'
 }
 
+// 22-3.3 删除事件，接收当前日志数据
+const onDelete = async (row) => {
+  // 22-3.3.1 确认删除弹窗
+  ElMessageBox.confirm('确认删除该日志吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    // 22-3.3.2 调用deleteEmotionAPI函数，传递当前日志id，删除日志
+  await deleteEmotionAPI(row.id)
+  ElMessage.success('删除成功')
+  // 22-3.3.3 删除成功后关闭弹窗，刷新日志列表数据
+  showDialog.value = false
+  onPageSearch()
+})}
 
 // 22-1.8 页面一渲染就获取情绪日志列表数据
 onMounted(() => {

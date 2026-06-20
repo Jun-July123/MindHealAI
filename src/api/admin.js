@@ -115,4 +115,10 @@ export const getEmotionPageAPI = (params) => {
   })
 }
 
-
+// 22-3.1 api/admin.js配置导出删除情绪日志接口，接收情绪日志id
+export const deleteEmotionAPI = (id) => {
+  return service({
+    url: `/emotion-diary/admin/${id}`,
+    method: 'delete',
+  })
+}
