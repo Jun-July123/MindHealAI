@@ -90,7 +90,7 @@ export const deleteKnowledgeArticleByIdAPI = (id) => {
 }
 
 // 21-1.3 api/admin.js配置导出咨询记录接口，接收分页参数params
-export const getPsychologicalChatSessionsAPI = (params) => {
+export const getSessionsAPI = (params) => {
   return service({
     url: '/psychological-chat/sessions',
     method: 'get',
@@ -98,3 +98,10 @@ export const getPsychologicalChatSessionsAPI = (params) => {
   })
 }
 
+// 21-2.5 api/admin.js配置导出咨询记录详情接口，接收会话id
+export const getSessionsByIdMessagesAPI = (id) => {
+  return service({
+    url: `/psychological-chat/sessions/${id}/messages`,
+    method: 'get',
+  })
+}
