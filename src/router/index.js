@@ -2,7 +2,8 @@
 // 2-1.1 安装路由 npm install vue-router
 // 2-1.2 创建src/router/index.js，引入vue-router路由，history模式
 import { createRouter, createWebHistory } from 'vue-router'
-import BackendLayout from '@/BackendLayout.vue'
+import BackendLayout from '@/components/BackendLayout.vue'  
+import FrontendLayout from '@/components/FrontendLayout.vue'
 
 // 2-1.3 创建后台一级路由BackEndLayout，二级路由
 // 2-1.4 配置后台路由
@@ -17,7 +18,7 @@ const backendRoutes = [
     children: [
       {
         path: 'dashboard',
-        component: () => import('@/views/dashboard.vue'),
+        component: () => import('@/views/backDashboard.vue'),
         // 4-1.4 二级路由配置meta-title及icon属性,用于显示在侧边菜单栏中
         meta: {
           title: '数据分析',
@@ -26,7 +27,7 @@ const backendRoutes = [
       },
       {
         path: 'knowledge',
-        component: () => import('@/views/knowledge.vue'),
+        component: () => import('@/views/backKnowledge.vue'),
         meta: {
           title: '知识文章',
           icon: 'ChatLineSquare',
@@ -34,7 +35,7 @@ const backendRoutes = [
       },
       {
         path: 'consultations',
-        component: () => import('@/views/consultations.vue'),
+        component: () => import('@/views/backConsultations.vue'),
         meta: {
           title: '咨询记录',
           icon: 'Message',
@@ -42,7 +43,7 @@ const backendRoutes = [
       },
       {
         path: 'emotional',
-        component: () => import('@/views/emotional.vue'),
+        component: () => import('@/views/backEmotional.vue'),
         meta: {
           title: '情绪日志',
           icon: 'User',
@@ -72,10 +73,50 @@ const backendRoutes = [
     ]
   }
 ]
+
+// 25-1.2 创建前台一级路由FrontendLayout，二级路由
+const frontendRoutes = [
+  {
+    path: '/',
+    component: FrontendLayout,
+    children: [
+      // 25-1.2.1 创建首页组件，配置为二级路由
+      {
+        path: '',
+        component: () => import('@/views/frontHome.vue'),
+      },
+      // 25-1.2.2 创建AI咨询组件，配置为二级路由
+      {
+        path: 'consultation',
+        component: () => import('@/views/frontConsutation.vue'),
+        meta: {
+          title: 'AI咨询',
+        }
+      },
+      // 25-1.2.3 创建情绪日记组件，配置为二级路由
+      {
+        path: 'emotion-diary',
+        component: () => import('@/views/frontEmotionDiary.vue'),
+        meta: {
+          title: '情绪日记',
+        }
+      },
+      // 25-1.2.4 创建知识库组件，配置为二级路由
+      {
+        path: 'knowledge',
+        component: () => import('@/views/frontKnowledge.vue'),
+        meta: {
+          title: '知识库',
+        }
+      },
+    ]
+  }
+]
 // 2-1.5 创建路由实例
 const router = createRouter({
+  // 25-1.3 将后台路由和前台路由合并到router实例中
+  routes: [...backendRoutes, ...frontendRoutes],
   history: createWebHistory(),
-  routes: backendRoutes,
 })
 
 // 24-1.6 路由前置守卫（路由跳转之前执行）
@@ -90,11 +131,12 @@ router.beforeEach((to, from, next) => {
       if (to.path.startsWith('/back')) {
         next()
       } else {
-        next('/back/dashboard')
+        // next('/back/dashboard')
+        next()
       }
     }
     else if(userInfo.userType === 1){
-      // next()
+      next()
     }
   }
   // 24-1.6.3 如果token不存在,访问的是后台路由,则跳转后台登录页

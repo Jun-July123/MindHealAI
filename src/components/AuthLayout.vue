@@ -7,7 +7,8 @@
         <h2 class="title">心理健康AI助手</h2>
         <p class="text">登录后即可开始使用心理健康AI助手</p>
         <div class="robot">
-          <el-image :src="iconUrl" style="width: 90px; height: 90px;" alt="心理健康AI助手"></el-image>
+          <!-- <el-image :src="iconUrl" style="width: 50px; height: 50px;" alt="心理健康AI助手"></el-image> -->
+           <el-image :src="logoUrl" class="brand-logo" />
         </div>
       </div>
     </div>
@@ -20,7 +21,7 @@
 
 <script setup>
 // 12-1.4 new URL导入图片
-const iconUrl = new URL('@/assets/images/robot-FILL.png', import.meta.url).href
+const logoUrl =  new URL('../assets/images/机器人.png', import.meta.url).href
 </script>
 
 <!-- 12-1.6 Auth样式 -->
