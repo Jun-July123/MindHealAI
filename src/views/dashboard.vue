@@ -84,6 +84,37 @@
          </div>
         </el-card>
       </el-col>
+
+       <el-col :span="12">
+        <!-- 23-3.1 咨询统计卡片 -->
+        <el-card style="width: 100%;" v-if=" overviewData.consultationStats">
+          <!-- 23-3.1.1 插槽，卡片头部标题 -->
+          <template #header>
+            <div class="card-header">咨询统计</div>
+          </template>
+
+         <!-- 23-3.1.2 图表内容容器，包括咨询统计信息和咨询统计图表-->
+         <div class="chart-content">
+          <!-- 23-3.1.3 咨询统计信息包含咨询会话数、平均时长、活跃用户 -->
+          <div class="consultation-status">
+            <div class="statu-item">
+              <div class="statu-label">咨询会话数</div>
+              <div class="statu-value">{{ consultationData.totalSessions}}</div>
+            </div>
+            <div class="statu-item">
+              <div class="statu-label">平均时长</div>
+              <div class="statu-value">{{ consultationData.avgDurationMinutes}}秒</div>
+            </div>
+            <div class="statu-item">
+              <div class="statu-label">活跃用户</div>
+              <div class="statu-value">{{ systemOverviewData.activeUsers}}</div>
+            </div>
+          </div>
+          <!-- 23-3.1.4 咨询统计图表，ref绑定consultationChartRef咨询统计图表 -->
+          <div ref="consultationChartRef" style="width:100%;height: 260px;"></div>
+         </div>
+        </el-card>
+      </el-col>
     </el-row>
 
   </div>
@@ -103,6 +134,7 @@ const smileUrl = new URL('@/assets/images/smile.png', import.meta.url).href
 
 const overviewData = ref({})
 const systemOverviewData = ref({})
+const consultationData = ref(null)
 
 // 23-1.2 调用getDataOverviewAPI获取综合分析数据
 const getOverview = () => {
@@ -111,9 +143,13 @@ const getOverview = () => {
     overviewData.value = res
     // 23-1.2.2 将综合分析数据的系统统计数据赋值给systemOverviewData
     systemOverviewData.value = res.systemOverview
-    // 23-2.5 获取到综合数据后，等DOM更新完毕再执行情绪趋势分析图表初始化
+    // 23-1.2.3 将综合分析数据的咨询统计数据赋值给consultationData
+    consultationData.value = res.consultationStats
     nextTick(() => {
+      // 23-2.5 获取到综合数据后，等DOM更新完毕再执行情绪趋势分析图表初始化
       initEmotionChart()
+      // 23-3.5 获取到综合数据后，等DOM更新完毕再执行咨询趋势分析图表初始化 
+      initConsultationChart()
     })
   })
 }
@@ -219,6 +255,126 @@ const initEmotionChart = () => {
   emotionChart.setOption(option)
 }
 
+const consultationChart = ref(null)
+const consultationChartRef = ref(null)
+// 23-3.2 咨询统计图表
+const initConsultationChart = ()=>{
+   // 23-3.2.1 如果不存在咨询统计图表容器，直接返回
+  if (!consultationChartRef.value) return
+  // 23-3.2.2 先销毁旧实例，避免重复初始化图表
+  if (consultationChart.value) consultationChart.value.dispose()
+  // 23-3.2.3 获取咨询统计图表实例，初始化最新统计数据  
+  consultationChart.value = echarts.init(consultationChartRef.value)
+  // 23-3.2.4 获取咨询统计趋势数据赋值给dailyTrend
+  const dailyTrend = overviewData.value.consultationStats.dailyTrend || []
+  // 23-3.3 配置咨询统计图表选项
+  const option = {
+    // 23-3.3.1 图表标题
+    title: {
+      text: '咨询统计',
+      textStyle: {
+        fontSize: 16,
+        fontWeight: 600,
+        color: '#2d3436'
+      },
+      left: 'center',
+      top: 10
+    },
+    // 23-3.3.2 提示框配置
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#fab1a0',
+      borderWidth: 1,
+      textStyle: {
+        color: '#2d3436'
+      }
+    },
+    // 23-3.3.3 图例配置（会话数量、参与用户数）
+    legend: {
+      data: ['会话数量', '参与用户数'],
+      top: 40,
+      textStyle: {
+       color: '#636e72'
+     }
+    },
+    // 23-3.3.4 网格配置（设置图表内容区域的位置）
+    grid: {left: '3%',right: '4%',bottom: '3%',top: 80,containLabel: true},
+    // 23-3.3.5 X轴配置（遍历dailyTrend，获取日期）
+    xAxis: {
+      type: 'category',
+      data: dailyTrend.map(item => item.date),
+      axisLine: {
+        lineStyle: {
+          color: 'rgba(244, 162, 97, 0.3)'
+        }
+      },
+      axisLabel: {
+        color: '#636e72'
+      }
+    },
+    // 23-3.3.6 Y轴配置（遍历dailyTrend，获取会话数量、参与用户数）
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        color: '#636e72'
+      },
+      axisLine: {
+        lineStyle: {
+        color: 'rgba(244, 162, 97, 0.3)'
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          color: 'rgba(244, 162, 97, 0.1)'
+        }
+      }
+    },
+    // 23-3.3.7 系列配置（会话数量(data遍历dailyTrend，获取会话数量sessionCount)、参与用户数(data遍历dailyTrend，获取参与用户数userCount)）
+    series: [
+      {
+        name: '会话数量',
+        type: 'bar',
+        data: dailyTrend.map(item => item.sessionCount),
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: '#74b9ff' },
+              { offset: 1, color: '#0984e3' }
+            ]
+          }
+        },
+       barWidth: '40%'
+      },
+     {
+       name: '参与用户数',
+       type: 'bar',
+       data: dailyTrend.map(item => item.userCount),
+       itemStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: '#fdcb6e' },
+            { offset: 1, color: '#f39c12' }
+          ]
+        }
+      },
+        barWidth: '40%'
+      }
+    ]}
+  // 23-3.4 将图表选项设置为咨询趋势图表选项
+  consultationChart.value.setOption(option)
+}
+
 onMounted(() => {
   // 23-1.3 页面一渲染时调用getOverview函数获取综合分析数据
   getOverview()
@@ -281,21 +437,21 @@ onMounted(() => {
         height: 100% !important;
       }
 
-      .consultation-stats {
+      .consultation-status {
         display: flex;
         justify-content: space-around;
         margin-bottom: 20px;
 
-        .stat-item {
+        .statu-item {
           text-align: center;
 
-          .stat-label {
+          .statu-label {
             font-size: 12px;
             color: #7f8c8d;
             margin-bottom: 4px;
           }
 
-          .stat-value {
+          .statu-value {
             font-size: 18px;
             font-weight: 600;
             color: #2c3e50;
