@@ -49,15 +49,18 @@
 
 <script setup>
 import { ref ,reactive} from 'vue'
+import { postUserAddAPI } from '@/api/user'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 
 // 25-3.1 定义注册表单数据
-const formData = ref({
+const formData = reactive({
   "username": '',
-  "email": '',
-  "nickname": '',
-  "phone": '',
-  "password": '',
-  "confirmPassword": '',
+  "email": '2323211111@qq.com',
+  "nickname": '小样',
+  "phone": '13312345678',
+  "password": '123456',
+  "confirmPassword": '123456',
   "gender":0,
   "userType":1//用户类型 1-普通用户 2-管理员
 })
@@ -79,22 +82,29 @@ const rules = reactive({
 })
 
 const submitFormRef = ref(null)
-
+const router = useRouter()
 // 25-3.6 注册事件，接收submitFormRef表单（注册表单）
 const onRegister = async (form) => {
   // 25-3.6.1 表单不存在，直接返回
   if (!form) {
     return
   }
-  // 25-3.6.2 表单存在，验证表单数据是否符合规则
-  await form.validate((valid) => {
+  form.validate((valid) => {
     if (valid) {
-      console.log('表单数据:', formData.value)
-    } else {
-      console.log('表单验证失败')
-      return
+      postUserAddAPI(formData).then(res => {
+        if(res.data.code === 'BUSINESS_ERROR'){
+          ElMessage.error(res.data.message)
+        }
+        else{
+          ElMessage.success('注册成功')
+        }
+        console.log(res)
+        // 如果你需要注册完成手动跳登录，放开下面一行
+        // router.push('/auth/login')
+      })
     }
   })
+  
 }
 </script>
 

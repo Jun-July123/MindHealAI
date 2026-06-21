@@ -78,11 +78,12 @@ const backendRoutes = [
 const frontendRoutes = [
   {
     path: '/',
+    redirect: '/home',
     component: FrontendLayout,
     children: [
       // 25-1.2.1 创建首页组件，配置为二级路由
       {
-        path: '',
+        path: 'home',
         component: () => import('@/views/frontHome.vue'),
       },
       // 25-1.2.2 创建AI咨询组件，配置为二级路由
@@ -136,7 +137,7 @@ router.beforeEach((to, from, next) => {
       }
     }
     else if(userInfo.userType === 1){
-      next()
+       return to.path.startsWith('/back') ? '/' : true
     }
   }
   // 24-1.6.3 如果token不存在,访问的是后台路由,则跳转后台登录页
