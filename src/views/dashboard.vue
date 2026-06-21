@@ -115,8 +115,23 @@
          </div>
         </el-card>
       </el-col>
+
+
     </el-row>
 
+    <el-row style="margin-top: 20px;">
+      <!-- 23-4.1 用户活跃度趋势分析图卡片 -->
+        <el-card style="width: 100%;">
+          <!-- 23-4.1.1 插槽，卡片头部标题 -->
+          <template #header>
+            <div class="card-header">用户活跃度趋势</div>
+          </template>
+         <!-- 23-4.1.2 图表内容容器 ，ref绑定userActivityChartRef用户活跃度趋势图表容器-->  
+         <div class="chart-content">
+          <div ref="userActivityChartRef" style="width:100%;height: 300px;"></div>
+         </div>
+        </el-card>
+    </el-row>
   </div>
 </template>
 
@@ -150,13 +165,14 @@ const getOverview = () => {
       initEmotionChart()
       // 23-3.5 获取到综合数据后，等DOM更新完毕再执行咨询趋势分析图表初始化 
       initConsultationChart()
+      // 23-4.5 获取到综合数据后，等DOM更新完毕再执行用户活跃度趋势分析图表初始化
+      initUserActivityChart()
     })
   })
 }
 
 let emotionChart = null
 const emotionChartRef = ref(null)
-
 // 23-2.3 情绪趋势图表
 const initEmotionChart = () => {
   // 23-2.3.1 如果不存在情绪趋势图表容器，直接返回
@@ -375,11 +391,156 @@ const initConsultationChart = ()=>{
   consultationChart.value.setOption(option)
 }
 
-onMounted(() => {
-  // 23-1.3 页面一渲染时调用getOverview函数获取综合分析数据
+const userActivityChart = ref(null)
+const userActivityChartRef = ref(null)
+// 23-4.2 用户活跃度趋势分析图图表
+const initUserActivityChart = ()=>{
+  // 23-4.2.1 如果不存在用户活跃度趋势图表容器，直接返回
+  if (!userActivityChartRef.value) return
+  // 23-4.2.2 先销毁旧实例，避免重复初始化图表  
+  if (userActivityChart.value) userActivityChart.value.dispose()
+  // 23-4.2.3 获取用户活跃度趋势图表实例，初始化最新统计数据    
+  userActivityChart.value = echarts.init(userActivityChartRef.value)  
+  // 23-4.2.4 获取用户活跃度趋势数据赋值给userActivityData
+  const userActivityData = overviewData.value.userActivity || []
+  // 23-4.3 配置用户活跃度趋势图表选项
+  const option = {
+    // 23-4.3.1 图表标题
+    title: {
+      text: '用户活跃度趋势',
+      textStyle: {
+        fontSize: 16,
+        fontWeight: 600,
+        color: '#2d3436'
+      },
+      left: 'center',
+      top: 10
+    },
+    // 23-4.3.2 提示框配置
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#fab1a0',
+      borderWidth: 1,
+      textStyle: {
+        color: '#2d3436'
+      }
+    },
+    // 23-4.3.3 图例配置（活跃用户、新增用户、日记用户、咨询用户）
+    legend: {
+      data: ['活跃用户', '新增用户', '日记用户', '咨询用户'],
+      top: 40,
+      textStyle: {
+        color: '#636e72'
+      }
+    },
+    // 23-4.3.4 网格配置（设置图表内容区域的位置）
+    grid: {left: '3%',right: '4%',bottom: '3%',top: 80,containLabel: true},
+    // 23-4.3.5 X轴配置（遍历userActivityData，获取日期）
+    xAxis: {
+      type: 'category',
+      data: userActivityData.map(item => item.date),
+      axisLine: {
+        lineStyle: {
+          color: 'rgba(244, 162, 97, 0.3)'
+        }
+      },
+      axisLabel: {
+        color: '#636e72'
+      }
+    },
+    // 23-4.3.6 Y轴配置
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        color: '#636e72'
+      },
+      axisLine: {
+        lineStyle: {
+          color: 'rgba(244, 162, 97, 0.3)'
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          color: 'rgba(244, 162, 97, 0.1)'
+        }
+      }
+    },
+    // 23-4.3.7 系列配置（遍历userActivityData，获取活跃用户、新增用户、日记用户、咨询用户）
+    series: [
+      {
+        name: '活跃用户',
+        type: 'line',
+        data: userActivityData.map(item => item.activeUsers),
+        smooth: true,
+        lineStyle: {
+          width: 3,
+          color: '#a29bfe'
+        },
+        itemStyle: {
+          color: '#a29bfe'
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(162, 155, 254, 0.4)' },
+              { offset: 1, color: 'rgba(162, 155, 254, 0.1)' }
+            ]
+          }
+        }
+      },
+      {
+        name: '新增用户',
+        type: 'line',
+        data: userActivityData.map(item => item.newUsers),
+        smooth: true,
+        lineStyle: {
+          width: 3,
+          color: '#fdcb6e'
+        },
+        itemStyle: {
+          color: '#fdcb6e'
+        }
+      },
+      {
+        name: '日记用户',
+        type: 'line',
+        data: userActivityData.map(item => item.diaryUsers),
+        smooth: true,
+        lineStyle: {
+          width: 3,
+          color: '#00b894'
+        },
+        itemStyle: {
+          color: '#00b894'
+        }
+      },
+      {
+        name: '咨询用户',
+        type: 'line',
+        data: userActivityData.map(item => item.consultationUsers),
+        smooth: true,
+        lineStyle: {
+          width: 3,
+          color: '#fab1a0'
+        },
+        itemStyle: {
+          color: '#fab1a0'
+        }
+      }
+    ]
+  }
+  // 23-3.4 将图表选项设置为用户活跃度趋势图表选项
+  userActivityChart.value.setOption(option)
+}
+
+onMounted(()=>{
   getOverview()
-  // 23-2.5 初始化情绪趋势图表
-  // initEmotionChart()
 })
 </script>
 
