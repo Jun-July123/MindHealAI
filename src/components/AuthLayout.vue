@@ -21,7 +21,7 @@
 
 <script setup>
 // 12-1.4 new URL导入图片
-const logoUrl =  new URL('../assets/images/机器人.png', import.meta.url).href
+const logoUrl =  new URL('../assets/images/robot-fill.png', import.meta.url).href
 </script>
 
 <!-- 12-1.6 Auth样式 -->
