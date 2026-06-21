@@ -130,3 +130,11 @@ export const getDataOverviewAPI = () => {
     method: 'get'
   })
 }
+
+// 24-1.3 api/admin.js配置导出退出登录接口
+export const postuserLogoutAPI = () => {
+  return service({
+    url: '/user/logout',
+    method: 'post'
+  })
+}

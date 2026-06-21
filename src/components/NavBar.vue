@@ -7,7 +7,8 @@
       <el-button @click="handleCollapse" type="primary">
         <el-icon><Expand /></el-icon>
       </el-button>
-      <p class="page-title">左侧导航</p>
+      <!-- 24-1.2 NavBar左侧导航标题，获取渲染当前路由信息的meta.title标题 -->
+      <p class="page-title">{{ route.meta.title }}</p>
     </div>
 
     <div class="flex-box">
@@ -35,8 +36,15 @@
 <script setup>
 // 8-1.5 NavBar引入后台管理仓库useAdminStore
 import { useAdminStore } from '@/stores/admin'
-const adminStore = useAdminStore()
+import { ElMessageBox, ElMessage } from 'element-plus'
+import { useRouter, useRoute } from 'vue-router'
+import { postuserLogoutAPI } from '@/api/admin'
 
+// 24-1.1 NavBar引入使用useRouter路由,创建路由实例
+const router = useRouter()
+const route = useRoute()
+
+const adminStore = useAdminStore()
 // 8-1.7 切换折叠状态事件,调用toggleCollapse
 const handleCollapse = () => {
   adminStore.toggleCollapse()
@@ -45,8 +53,24 @@ const handleCollapse = () => {
 // 6-2.5 下拉菜单事件，处理对应菜单选项
 const handleCommand = (command) => {
   if (command === 'logout') {
-    console.log('退出登录');
+    // console.log('退出登录');
+    // 24-1.4 点击退出登录，弹出确认框
+    ElMessageBox.confirm('确定退出登录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      // 24-1.4.1 确认退出登录,调用退出登录接口,清除本地token及userInfo
+      postuserLogoutAPI().then(res => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('userInfo')
+        // 24-1.4.2 清除信息后,提示退出成功,跳转登录页
+        ElMessage.success('退出成功')
+        router.push('/auth/login')  
+      })
+    })
   }
+
 }
 
 
