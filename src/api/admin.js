@@ -122,3 +122,11 @@ export const deleteEmotionAPI = (id) => {
     method: 'delete',
   })
 }
+
+// 23-1.1 api/admin.js配置导出综合数据分析接口
+export const getDataOverviewAPI = () => {
+  return service({
+    url: '/data-analytics/overview',
+    method: 'get'
+  })
+}
