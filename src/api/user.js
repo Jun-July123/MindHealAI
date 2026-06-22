@@ -8,3 +8,12 @@ export const postUserAddAPI = (data) => {
     data
   })
 }
+
+// 26-3.1 api/user.js配置导出创建新会话接口，接收用户输入的信息，会话标题
+export const postSessionStartAPI = (data) => {
+  return service({
+    url: '/psychological-chat/session/start',
+    method: 'post',
+    data
+  })
+}

@@ -65,16 +65,18 @@
               placeholder="请输入您想要分享的内容..." 
               type="textarea"
               :rows="3"
-              @keydown.enter="onKeyDownMessage"
-              disabled="isAiTyping"
+              @keydown="onKeyDownMessage"
+              :disabled="isAiTyping"
               class="message-input"
               clearable></el-input>
         </div>
         <!-- 26-2.6.2 右侧发送按钮 -->
-        <el-button class="send-btn" type="primary">
+        <!-- 26-3.4 发送消息按钮，注册发送事件 -->
+        <!-- 消息输入框:disabled绑定isAiTyping（判断AI是否正在输入） -->
+        <el-button @click="onSendMessage" class="send-btn" type="primary">
           <el-icon>
             <Promotion />
-          </el-icon>
+          </el-icon>~
         </el-button>
       </div>
 
@@ -86,29 +88,90 @@
 
 <script setup>
 import { Promotion } from '@element-plus/icons-vue';
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { postSessionStartAPI } from '@/api/user'
+import { ElMessage } from 'element-plus'
 const logoUrl= new URL('@/assets/images/robot-fill.png', import.meta.url).href
 const likeUrl= new URL('@/assets/images/like.png', import.meta.url).href
-
-// 定义用户输入的消息
-const userMessage = ref('')
-// 定义AI是否正在输入
-const isAiTyping = ref(false)
-
-// 新建会话
-const onCreateSession = () => {
-    console.log('新建会话');
-}
-
-// 监听用户输入
-const onKeyDownMessage = (e) => {
-    if (e.key === 'Enter') {
-        console.log('用户按下了Enter键');
-    }
-}
-
 // 定义对话信息
 const chatMessages = ref([])
+// 定义用户输入的消息
+const userMessage = ref('')
+
+// 当前会话
+const currentSession = ref(null)
+
+// 26-3.2 新建会话
+const createSession = () => {
+  // 26-3.2.1 创建新的会话对象
+  const newSession = {
+    sessionId: `temp_${Date.now()}`,// 会话唯一标识
+    status: 'TEMP',// 会话状态(临时会话)
+    sessionTitle: '新对话',// 会话类型
+  }
+  // 26-3.2.2 将新的会话对象赋值给当前会话对象
+  currentSession.value = newSession
+}
+
+// 26-3.3 开始新会话(新对话转化为正式会话)，接收用户输入的消息
+const startNewSession = async (message) => {
+  // 26-3.3.1 定义会话参数（会话消息、会话标题）
+  const sessionParams = {
+    initialMessage: message,// 初始消息
+    sessionTitle: `心愈AI助手 - ${new Date().toLocaleString()}` ,
+  }
+
+  // 26-3.3.2 调用开始新会话接口，传递会话参数，获取开始会话数据
+  postSessionStartAPI(sessionParams).then(res => {
+    // 26-3.3.3 将获取到的数据转换为前端会话对象格式（会话状态为正式会话ACTIVE）
+    const session = {
+      sessionId: res.sessionId,
+      sessionTitle: sessionParams.sessionTitle,
+      status: 'ACTIVE',
+    }
+    // 26-3.3.4 将新会话作为当前会话（新会话更新为正式会话状态）
+    Object.assign(currentSession.value, session)
+  })
+}
+
+// 定义AI是否正在输入
+const isAiTyping = ref(false)
+// 26-3.5 发送消息事件
+const onSendMessage = () => {
+  // 26-3.5.1 将用户输入的消息去除首尾空格字符
+  const message = userMessage.value.trim()
+  // 26-3.5.2 检查用户是否输入了消息,如果没有输入,则返回
+  if (!message) {return}
+
+  // 26-3.5.3 当前AI正在输入,则提示用户稍后再试，返回
+  if (isAiTyping.value) {
+    ElMessage({
+      message: '小愈正在思考中,请稍后再试...',
+      type: 'warning'
+    })
+    return
+  }
+  
+  // 26-3.5.4 用户输入的信息不为空，AI没有在输入，发送消息给AI
+  // 清除输入框内容
+  userMessage.value = ''
+
+  // 26-3.5.5 如果当前为新会话，调用开始新对话函数
+  if (currentSession.value.status === 'TEMP') {
+    startNewSession(message)
+  }
+}
+
+
+
+
+
+onMounted(() => {
+  // 26-3.2.3 页面初始化时，新建一个会话
+  createSession()
+})
+
+
 
 </script>
 
