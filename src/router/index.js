@@ -128,16 +128,20 @@ router.beforeEach((to, from, next) => {
   // 访问的是后台路由,则放行,否则跳转到back/dashboard数据分析页面
   if (token) {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    if (userInfo.userType === 2 ) {
+    if (userInfo.userType == 2 ) {
       if (to.path.startsWith('/back')) {
         next()
       } else {
-        // next('/back/dashboard')
-        next()
+        next('/back/dashboard')
       }
     }
     else if(userInfo.userType === 1){
-       return to.path.startsWith('/back') ? '/' : true
+      // 26-1.2 路由前置守卫，存在token且普通用户访问后台路由或登录注册路由,则跳转首页
+      if (to.path.startsWith('/back')||to.path.startsWith('/auth')) {
+        next('/')
+      } else {
+        next()
+      }
     }
   }
   // 24-1.6.3 如果token不存在,访问的是后台路由,则跳转后台登录页

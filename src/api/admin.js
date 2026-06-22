@@ -10,6 +10,7 @@ export const login = (data) => {
     data,
   })
 }
+
 // 14-1.2 src/api/admin.js配置导出知识文章分类树接口
 export const categoryTree = () => {
   return service({
@@ -132,7 +133,7 @@ export const getDataOverviewAPI = () => {
 }
 
 // 24-1.3 api/admin.js配置导出退出登录接口
-export const postuserLogoutAPI = () => {
+export const postUserLogoutAPI = () => {
   return service({
     url: '/user/logout',
     method: 'post'

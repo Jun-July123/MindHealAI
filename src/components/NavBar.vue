@@ -38,7 +38,7 @@
 import { useAdminStore } from '@/stores/admin'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useRouter, useRoute } from 'vue-router'
-import { postuserLogoutAPI } from '@/api/admin'
+import { postUserLogoutAPI } from '@/api/admin'
 
 // 24-1.1 NavBar引入使用useRouter路由,创建路由实例
 const router = useRouter()
@@ -61,7 +61,7 @@ const handleCommand = (command) => {
       type: 'warning'
     }).then(() => {
       // 24-1.4.1 确认退出登录,调用退出登录接口,清除本地token及userInfo
-      postuserLogoutAPI().then(res => {
+      postUserLogoutAPI().then(res => {
         localStorage.removeItem('token')
         localStorage.removeItem('userInfo')
         // 24-1.4.2 清除信息后,提示退出成功,跳转登录页

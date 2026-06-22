@@ -48,8 +48,9 @@ const router = useRouter()
 
 const ruleFormRef = ref()
 const formData = ref({
-  username: '',
-  password: ''
+  // username: 'admin',
+  username: 'bshma',
+  password: '123456'
 })
 const rules = ref({
   username: [
@@ -85,7 +86,8 @@ const submitForm = async (formEl) => {
         if(data.userInfo.userType === 2){
           router.push('/back/dashboard')
         }else{
-          // router.push('/user')
+          // 26-1.1 普通用户登录成功，跳转首页
+          router.push('/home')
         }
       }catch(err){
         // ElMessage.error(err.message)

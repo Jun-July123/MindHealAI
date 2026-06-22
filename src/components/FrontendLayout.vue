@@ -13,9 +13,10 @@
         <div class="nav-section">
           <router-link to="/" class="nav-link">首页</router-link>
           <router-link to="/consultation" v-if="isLogin" class="nav-link">AI咨询</router-link>
-          <router-link to="/emotion-diary" v-else class="nav-link">情绪日记</router-link>
-          <router-link to="/knowledge" class="nav-link">知识库</router-link>
-          <el-button v-if="isLogin" class="logout-btn">退出登录</el-button>
+          <router-link to="/emotion-diary" class="nav-link">情绪日记</router-link>
+          <router-link to="/knowledge" class="nav-djdlink">知识库</router-link>
+          <!-- 26-1.3 退出登录按钮注册点击事件 -->
+          <el-button @click="onLogout" v-if="isLogin" class="logout-btn">退出登录</el-button>
           <template v-else>
             <router-link to="/auth/login" class="nav-link">登录</router-link>
             <router-link to="/auth/register" class="nav-link">
@@ -41,10 +42,33 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import { postUserLogoutAPI } from '@/api/admin'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 const logoUrl = new URL('@/assets/images/机器人.png', import.meta.url).href
 
 const isLogin = ref(false)
 const userInfo = ref(null)
+
+const router = useRouter()
+// 25-1.4 退出登录事件
+const onLogout = () => {
+  // 25-1.4.1 点击退出登录，弹出确认框
+  ElMessageBox.confirm('确定退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // 25-1.4.2 确认退出登录,引入调用退出登录接口,清除本地token及userInfo
+    postUserLogoutAPI().then(res => {
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+      // 25-1.4.3 清除信息后,提示退出成功,跳转登录页
+      ElMessage.success('退出成功')
+      router.push('/auth/login')  
+    })
+  })
+}
 
 onMounted(() => {
   // 25-1.4 定义isLogin变量，判断用户登录状态(如果存在token，说明用户已登录)

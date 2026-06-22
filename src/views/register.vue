@@ -54,57 +54,105 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 
 // 25-3.1 定义注册表单数据
+// const formData = reactive({
+//   "username": " ",
+//   "email": "2323211111@qq.com",
+//   "nickname": "小样",
+//   "phone": "13312345678",
+//   "password": "123456",
+//   "confirmPassword": "123456",  
+//   "gender":1,
+//   "userType":1//用户类型 1-普通用户 2-管理员
+// })
 const formData = reactive({
-  "username": '',
-  "email": '2323211111@qq.com',
-  "nickname": '小样',
-  "phone": '13312345678',
-  "password": '123456',
-  "confirmPassword": '123456',
-  "gender":0,
-  "userType":1//用户类型 1-普通用户 2-管理员
+  username: '3.14',
+  email: '2323211111@qq.com',
+  nickname: 'xiaoyang',
+  phone: '15556636363',
+  password: '123456',
+  confirmPassword: '123456',
+  gender: 1, // 文档：1男/2女，禁止0
+  userType: 1 // 用户端固定1
 })
 
 // 25-3.2 定义注册表单验证规则
 const rules = reactive({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { required: true, message: '请确认密码', trigger: 'blur' }
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 16, message: '用户名3-16位', trigger: 'blur' }
   ],
   email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' }
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '邮箱格式错误', trigger: 'blur' }
+  ],
+  nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式错误', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码至少6位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请确认密码', trigger: 'blur' },
+    {
+      validator: (_, val, cb) => {
+        val !== formData.password ? cb(new Error('两次密码不一致')) : cb()
+      },
+      trigger: 'blur'
+    }
   ]
 })
 
 const submitFormRef = ref(null)
 const router = useRouter()
 // 25-3.6 注册事件，接收submitFormRef表单（注册表单）
-const onRegister = async (form) => {
-  // 25-3.6.1 表单不存在，直接返回
-  if (!form) {
-    return
-  }
-  form.validate((valid) => {
-    if (valid) {
-      postUserAddAPI(formData).then(res => {
-        if(res.data.code === 'BUSINESS_ERROR'){
-          ElMessage.error(res.data.message)
-        }
-        else{
-          ElMessage.success('注册成功')
-        }
-        console.log(res)
-        // 如果你需要注册完成手动跳登录，放开下面一行
-        // router.push('/auth/login')
-      })
-    }
-  })
+// const onRegister = async (form) => {
+//   // 25-3.6.1 表单不存在，直接返回
+//   if (!form) {
+//     return
+//   }
+//   form.validate((valid) => {
+//     // 25-4.2 验证表单失败，直接返回
+//     if (!valid) {
+//       return
+//     }
+//     // 25-4.3 验证表单成功，调用注册用户接口，传递表单数据
+//     postUserAddAPI(formData).then(res => {
+//       // 25-4.3.1 如果注册失败，显示错误信息
+//       if(res.data.code === 'BUSINESS_ERROR'){
+//           ElMessage.error(res.data.message)
+//         }
+//         // 25-4.3.2 注册成功，显示成功信息，跳转登录页
+//         else{
+//           ElMessage.success('注册成功')
+//           router.push('/auth/login')
+//         }  
+//       })  
+//   })
   
+// }
+const onRegister = (form) => {
+  if (!form) return
+  form.validate(async (valid) => {
+    if (!valid) return
+    // 直接传完整formData，不要删除confirmPassword
+    try {
+      const res = await postUserAddAPI(formData.value)
+      console.log('后端返回原始数据', res)
+      if (res.code === 200) {
+        ElMessage.success('注册成功')
+      } else {
+        ElMessage.error(res.msg || '注册失败，请检查填写信息')
+      }
+    } catch (err) {
+      console.error('请求异常', err)
+      ElMessage.error('服务器响应异常，请检查填写内容')
+    }
+    // 25-3.6.2 注册成功，跳转登录页
+    router.push('/auth/login')
+  })
 }
 </script>
 
