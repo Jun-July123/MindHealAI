@@ -17,3 +17,12 @@ export const postSessionStartAPI = (data) => {
     data
   })
 }
+
+// 26-4.1 api/user.js配置导出获取会话列表接口，接收当前页码和每页数量
+export const getSessionListAPI = (params) => {
+  return service({
+    url: '/psychological-chat/sessions',
+    method: 'get',
+    params
+  })
+}

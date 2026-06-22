@@ -13,7 +13,57 @@
           <div class="status-dot"></div>在线中
         </div>
       </div>
+
+      <!-- 26-4.3 基本信息-会话列表(包含会话标题、会话列表) -->
+      <div class="session-history">
+        <h4 class="session-title">会话列表</h4>
+        <!-- 26-4.4 v-for遍历会话列表，渲染每个会话项 -->
+        <div class="session-list">
+          <div v-for="session in sessionList" :key="session.id" class="session-item">
+            <!-- 26-4.5 每个会话包含会话信息和删除按钮 -->
+            <div class="session-info">
+              <!-- 26-4.6 会话信息（会话标题、会话开始时间、会话最后一条消息内容、会话消息数量、会话持续时间） -->
+              <div class="session-title">
+                <span>{{ session.sessionTitle }}</span>
+                <!-- 会话开始时间 -->
+                <div class="session-meta">
+                  <span class="session-time">{{ session.startedAt }}</span>
+                </div>
+                <!-- 会话最后一条消息内容 -->
+                <div class="session-preview">{{ session.lastMessageContent }}</div>
+                <!-- 会话消息数量、会话持续时间 -->
+                <div class="session-status">
+                  <span class="status-dot">
+                    <el-icon>
+                      <ChatRound />
+                    </el-icon>
+                    {{ session.messageCount || 0 }}
+                  </span>
+                  <span class="status-dot">
+                    <el-icon>
+                      <Clock />
+                    </el-icon>
+                    {{ session.durationMinutes || 0 }}分钟
+                  </span>
+                </div>
+              </div>
+
+              <!-- 会话删除按钮 -->
+              <div class="session-actions">
+                <el-button text type="danger" size="mini" @click="onDeleteSession(session)">
+                  <el-icon>
+                    <DeleteFilled />
+                  </el-icon>
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
+
+    
 
     <!-- 26-2.3 聊天区域（包含聊天顶部、聊天内容区域、聊天消息发送区域） -->
     <div class="chat-main">
@@ -89,7 +139,7 @@
 <script setup>
 import { Promotion } from '@element-plus/icons-vue';
 import { ref, onMounted } from 'vue'
-import { postSessionStartAPI } from '@/api/user'
+import { postSessionStartAPI, getSessionListAPI } from '@/api/user'
 import { ElMessage } from 'element-plus'
 const logoUrl= new URL('@/assets/images/robot-fill.png', import.meta.url).href
 const likeUrl= new URL('@/assets/images/like.png', import.meta.url).href
@@ -132,6 +182,9 @@ const startNewSession = async (message) => {
     // 26-3.3.4 将新会话作为当前会话（新会话更新为正式会话状态）
     Object.assign(currentSession.value, session)
   })
+
+  // 26-4.2.4 每开始一次新对话，就更新会话列表
+  getSessionList()
 }
 
 // 定义AI是否正在输入
@@ -162,11 +215,20 @@ const onSendMessage = () => {
   }
 }
 
-
-
-
+// 会话列表
+const sessionList = ref([])
+// 26-4.2 获取会话列表
+const getSessionList = () => {
+  // 26-4.2.1 调用获取会话列表接口，获取会话列表数据
+  getSessionListAPI({pageNum: 1,pageSize: 10,}).then(res => {
+    // 26-4.2.2 将获取到的会话列表数据赋值给sessionList
+    sessionList.value = res.records  
+  })
+}
 
 onMounted(() => {
+  // 26-4.2.3 页面初始化时，获取会话列表
+  getSessionList()
   // 26-3.2.3 页面初始化时，新建一个会话
   createSession()
 })
@@ -306,7 +368,7 @@ onMounted(() => {
                                 overflow: hidden;
                                 text-overflow: ellipsis;
                             }
-                            .session-stats {
+                            .session-status {
                                 display: flex;
                                 align-items: center;
                                 gap: 12px;
@@ -322,7 +384,8 @@ onMounted(() => {
                         .session-actions {
                             position: absolute;
                             top: 10px;
-                            right: 12px;
+                            // right: 12px;
+                            right: 6px;
                         }
                     }
                 }
