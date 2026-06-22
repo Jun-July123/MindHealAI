@@ -26,3 +26,19 @@ export const getSessionListAPI = (params) => {
     params
   })
 }
+
+// 26-5.1 api/user.js配置导出删除会话接口，接收会话id
+export const deleteSessionAPI = (sessionId) => {
+  return service({
+    url: `/psychological-chat/sessions/${sessionId}`,
+    method: 'delete',
+  })
+}
+
+// 26-5.4 api/user.js配置导出获取会话的消息记录接口，接收会话id
+export const getSessionMessagesAPI = (sessionId) => {
+  return service({
+    url: `/psychological-chat/sessions/${sessionId}/messages`,
+    method: 'get',
+  })
+}

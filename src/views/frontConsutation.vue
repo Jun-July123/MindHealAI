@@ -19,7 +19,8 @@
         <h4 class="session-title">会话列表</h4>
         <!-- 26-4.4 v-for遍历会话列表，渲染每个会话项 -->
         <div class="session-list">
-          <div v-for="session in sessionList" :key="session.id" class="session-item">
+          <!-- 26-5.5 每一条会话项注册点击事件，被选中后，传递该会话id -->
+          <div @click="onSelectSession(session.id)" v-for="session in sessionList" :key="session.id" class="session-item">
             <!-- 26-4.5 每个会话包含会话信息和删除按钮 -->
             <div class="session-info">
               <!-- 26-4.6 会话信息（会话标题、会话开始时间、会话最后一条消息内容、会话消息数量、会话持续时间） -->
@@ -50,7 +51,8 @@
 
               <!-- 会话删除按钮 -->
               <div class="session-actions">
-                <el-button text type="danger" size="mini" @click="onDeleteSession(session)">
+                <!-- 26-5.2 删除会话按钮注册点击事件，传递该会话id -->
+                <el-button @click="onDeleteSession(session.id)" text type="danger" size="mini">
                   <el-icon>
                     <DeleteFilled />
                   </el-icon>
@@ -104,6 +106,38 @@
             <div class="message-time">刚刚</div>
           </div>
         </div>
+
+        <!-- 26-5.7 v-for遍历对话消息记录，渲染每个消息项（消息项左侧头像、消息项右侧消息内容和消息发送时间） -->
+        <!-- 26-5.7.1 当消息发送者是用户，消息添加user-message类，否则添加ai-message类 -->
+        <div class="message-item" v-for="msg in selectedSessionMessages" :key="msg.id" :class="msg.senderType == 1 ? 'user-message' : 'ai-message'">
+          <div class="message-avatar">
+            <!-- 26-5.7.2 对话左侧头像，根据消息发送者是用户或AI助手，显示不同的头像 -->
+            <el-image :src= "msg.senderType == 1 ? userUrl : logoUrl" style="width: 18px; height: 18px;"/>
+          </div>
+          <!-- 26-5.8 对话右侧消息内容及消息发送时间 -->
+          <div class="message-content">
+            <div class="message-bubble"> 
+              <!-- 26-5.8.1 当消息是错误状态，显示信息错误提示 -->
+              <div v-if="msg.isError" class="error-message">
+                <p>{{ msg.content }}</p>
+              </div>
+
+              <!-- 26-5.8.2 当消息发送者是AI、且是正在输入状态，显示AI助手正在思考中状态 ..-->
+              <div v-if="msg.senderType == 2 && isAiTyping && !msg.content" class="tying-indictor">
+                <div v-for="(dot, index) in 3" :key="index" class="typing-dot"></div>
+              </div>
+
+              <!-- 26-5.8.3 当消息发送者是AI，引入MarkdownRenderer组件，传递消息内容，格式化显示AI助手返回消息 -->
+              <MarkdownRenderer v-else-if="msg.senderType == 2 " :content="msg.content" :is-ai-message="true" />
+
+              <!-- 26-5.8.4 当消息发送者是用户，将用户发送的消息格式化(实现换行)、v-html显示用户输入消息， -->
+              <p v-else-if="msg.content" v-html="formatMessage(msg.content)"></p>
+            </div>
+
+            <!-- 26-5.8.5 消息下方显示发送时间 -->
+            <div class="message-time">{{ msg.senderType == 2 && isAiTyping ? '正在输入...' : msg.createdAt }}</div>
+          </div>
+        </div>
       </div>
 
       <!-- 26-2.6 聊天消息发送区域 -->
@@ -126,7 +160,7 @@
         <el-button @click="onSendMessage" class="send-btn" type="primary">
           <el-icon>
             <Promotion />
-          </el-icon>~
+          </el-icon>
         </el-button>
       </div>
 
@@ -139,10 +173,13 @@
 <script setup>
 import { Promotion } from '@element-plus/icons-vue';
 import { ref, onMounted } from 'vue'
-import { postSessionStartAPI, getSessionListAPI } from '@/api/user'
-import { ElMessage } from 'element-plus'
+import { postSessionStartAPI, getSessionListAPI, deleteSessionAPI, getSessionMessagesAPI } from '@/api/user'
+import { ElMessage , ElMessageBox} from 'element-plus'
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
+
 const logoUrl= new URL('@/assets/images/robot-fill.png', import.meta.url).href
 const likeUrl= new URL('@/assets/images/like.png', import.meta.url).href
+const userUrl= new URL('@/assets/images/users.png', import.meta.url).href    
 // 定义对话信息
 const chatMessages = ref([])
 // 定义用户输入的消息
@@ -224,6 +261,40 @@ const getSessionList = () => {
     // 26-4.2.2 将获取到的会话列表数据赋值给sessionList
     sessionList.value = res.records  
   })
+}
+
+// 26-5.3 删除会话事件，接收会话id
+const onDeleteSession = (sessionId) => {
+//   26-5.3.1 确认删除弹窗
+  ElMessageBox.confirm('确认删除该会话吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      // 26-5.3.1 确认删除，调用删除会话接口，传递会话id
+      deleteSessionAPI(sessionId).then(res => {
+        // 26-5.3.2 删除成功后，提示删除成功,刷新会话列表
+        ElMessage.success('删除成功')
+        getSessionList()
+      })
+    })
+}
+
+// 被选中的会话消息记录
+const selectedSessionMessages = ref([])
+
+// 26-5.6 选择会话事件，接收会话id
+const onSelectSession = (sessionId)=>{
+  // 26-5.6.1 调用获取会话的消息记录接口，传递会话id
+  getSessionMessagesAPI(sessionId).then(res => {
+    // 26-5.6.2 将获取到的会话消息记录数据赋值给selectedSessionMessages
+    selectedSessionMessages.value = res
+  })
+}
+
+// 换行处理
+const formatMessage = (message) => {
+  return message.replace(/\n/g, '<br>')
 }
 
 onMounted(() => {
