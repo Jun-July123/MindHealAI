@@ -14,7 +14,69 @@
         </div>
       </div>
 
-      <!-- 26-4.3 基本信息-会话列表(包含会话标题、会话列表) -->
+      <!-- 27-2.1 基本信息-情绪花园(标题、情绪信息、温暖建议) -->
+      <div class="emotion-garden">
+        <h4 class="garden-title">情绪花园</h4>
+        <!-- 27-2.2 情绪信息包括情绪名称和情绪分数 -->
+        <div class="emotion-info">
+          <div class="emotion-name">中性</div>
+          <div class="emotion-score">80</div>
+        </div>
+        
+        <!-- 27-2.3 温暖建议包括情绪状态、情绪强度、建议、治愈行动、风险提示-->
+        <div class="warm-tips">
+          <!-- 情绪状态 -->
+          <div class="emotion-status-text">
+            <span class="status-label">今天感觉</span>
+            <span class="status-emotion">很不错</span>
+          </div>
+
+          <!-- 情绪强度 -->
+          <div class="emotion-intensity">·
+            <span class="intensity-dots">
+              <span class="dot" v-for="index in 3" :key="index" ></span>
+            </span>
+            <span class="intensity-text">
+               良好
+            </span>
+          </div>
+
+          <!-- 建议 -->
+          <div class="warm-suggestion" >
+            <div class="suggestion-icon">💝</div>
+            <div class="suggestion-content">
+              <div class="suggestion-title">给你一些建议</div>
+              <div class="suggestion-text">继续保持</div>
+            </div>
+          </div>
+          
+          <!-- 治愈行动 -->
+          <div class="healing-actions">
+              <div class="actions-title">治愈小行动</div>
+              <div class="actions-list">
+                <div class="action-item">
+                  <div class="action-icon">✨</div>
+                  <div class="action-text">多休息</div>
+                </div>
+                <div class="action-item">
+                  <div class="action-icon">✨</div>
+                  <div class="action-text">多喝水</div>
+                </div>
+              </div>
+          </div>
+
+          <!-- 风险提示 -->
+          <div class="risk-notice">
+            <div class="notice-icon">🤗</div>
+            <div class="notice-content">
+              <div class="notice-title">温馨提示</div>
+              <div class="notice-text">好好爱自己</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+        <!-- 26-4.3 基本信息-会话列表(包含会话标题、会话列表) -->
       <div class="session-history">
         <h4 class="session-title">会话列表</h4>
         <!-- 26-4.4 v-for遍历会话列表，渲染每个会话项 -->
@@ -409,8 +471,6 @@ const onDeleteSession = (sessionId) => {
     })
 }
 
-
-
 // 换行处理
 const formatMessage = (message) => {
   return message.replace(/\n/g, '<br>')
@@ -446,6 +506,10 @@ const onKeyDownMessage = (e) => {
     onSendMessage()
   }
 }
+
+
+
+
 
 onMounted(() => {
   // 26-4.2.3 页面初始化时，获取会话列表
