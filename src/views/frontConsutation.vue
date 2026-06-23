@@ -240,6 +240,17 @@ const onSendMessage = () => {
   // 26-3.5.5 如果当前为新会话，调用开始新对话函数
   if (currentSession.value.status === 'TEMP') {
     startNewSession(message)
+  }else{
+    // 27-1.6 再次发送消息给AI
+    // 26-1.6.1 当前为正式会话，将用户输入的消息添加到对话列表chatMessages中
+    // chatMessages.value.push({
+    //   id:`user_${Date.now()}`,
+    //   senderType: 1,
+    //   content: message,
+    //   createdAt: new Date().toISOSString(),
+    // })
+    // 26-1.6.2 调用开始ai流式回复函数，传递当前会话id和用户输入的消息
+    startAiResponse(currentSession.value.sessionId, message)
   }
 }
 
@@ -265,10 +276,112 @@ const startNewSession = async (message) => {
 
   // 26-4.2.4 每开始一次新对话，就更新会话列表
   getSessionList()
-  // 开始流式回复,传递会话id和用户输入的消息
-  // startAiResponse(currentSession.value.sessionId, message)
+  // 27-1.5 开始新对话后，就开始进行ai流式回复,传递当前会话id和用户输入的消息
+  startAiResponse(currentSession.value.sessionId, message)
 }
 
+// 27-1.1 开始ai流式回复,接收会话id和用户输入的消息
+const startAiResponse = (sessionId, userMessage) => {
+  // 27-1.1.1 判断当前AI是否正在输入,如果正在输入,则提示用户稍后再试，返回
+  if(isAiTyping.value) {
+    ElMessage.warning('小愈正在思考中,请稍后再试...')
+    return
+  }
+
+  // 27-1.1.2 定义ai消息对象（包含id、senderType、content、createAt时间）
+  const aiMessage = {
+    id:`ai_${Date.now()}_${Math.random().toString(36).substring(2,9)}`,// 生成随机id
+    senderType:2,
+    content:'',
+    createAt: new Date().toISOString(),
+  }
+
+  // 27-1.1.3 将ai消息添加到对话列表chatMessages
+  chatMessages.value.push(aiMessage)
+
+  // 27-1.1.4 下载ai流式回复依赖npm install @microsoft/fetch-event-source
+  // 27-1.1.5 引入fetchEventSource流式接口
+
+  const controller = new AbortController()//用于终止fetch请求
+  // 27-1.2 调用fetchEventSource流式接口，进行ai流式回复
+  // 27-1.2.1 传递流式对话接口
+  fetchEventSource('/api/psychological-chat/stream', {
+    // 27-1.2.2 请求方法POST
+    method: 'POST',
+    // 27-1.2.3 请求头（Content-Type、token、Accept）
+    headers: {
+      'Content-Type': 'application/json',
+      'token': localStorage.getItem('token'),
+      'Accept': 'text/event-stream',
+    },
+    // 27-1.2.4 请求体（sessionId、userMessage）
+    body: JSON.stringify({
+      sessionId,
+      userMessage,
+    }),
+    // 27-1.2.5 信号量（定义阻止请求实例，配置终止fetch请求信号量）
+    signal: controller.signal,
+    // 27-1.2.6 流式建立成功后，执行一次onopen
+    // 当响应的请求头获取到的Content-Type不为流式格式text/event-stream，提示用户稍后再试，返回
+    onopen: (response) => {
+      if(response.headers.get('Content-Type') !== 'text/event-stream') {
+        ElMessage.error('服务器返回非流式数据，请稍后再试')
+      }
+    },
+    // 27-1.2.7 每获取到流式数据，执行onmessage
+    onmessage: (streamData) => {
+      // 27-1.3 onmessage事件处理
+      // 27-1.3.1 从流式数据中提取内容并去除首尾空格,
+      const row = streamData.data.trim()
+      // 27-1.3.2 检查消息是否为空,如果为空,则返回
+      if(!row) {return}
+
+      // 27-1.3.3 获取当前ai消息内容
+      const aiMessage = chatMessages.value[chatMessages.value.length - 1]
+
+      const messageType = streamData.event 
+      // 27-1.3.4 如果消息类型是done,则当前是最后一条消息，结束流式对话
+      if(messageType === 'done') {
+        isAiTyping.value = false
+        controller.abort() // 终止fetch请求
+      }
+      
+      const messageData = JSON.parse(row)
+      const messageCode = messageData.code
+      // 27-1.3.5 如果不是done,并且有消息数据有content,消息状态正常，则将当前消息内容拼接在aiMessage.content中
+      if(messageCode && messageData.data.content) {
+        aiMessage.content += messageData.data.content
+      }
+      // 27-1.3.6 如果消息数据状态不正常,则提示用户稍后再试，返回
+      else if(!messageCode) {
+        aiErrorResponse.value = messageData.message || 'AI回复失败'
+      }
+    },
+    // 27-1.2.8 流式建立失败后，ai回复失败执行一次onError
+    onError: (error) => {
+      aiErrorResponse(error || '服务器返回错误，请稍后再试')
+    },
+    // 27-1.2.9 流式建立关闭后，执行一次onClose（开始情绪分析）
+    onClose: () => {
+      // 开始情绪分析
+    },
+  })
+}
+
+// 27-1.4 ai回复失败事件
+const aiErrorResponse = (errorMessage) => {
+  // 27-1.4.1 获取当前ai消息内容
+  const aiMessage = chatMessages.value[chatMessages.value.length - 1]
+  // 27-1.4.2 如果当前ai消息存在,则将错误信息赋值给aiMessage.content
+  if(aiMessage) {
+    aiMessage.content = 'AI回复失败：' + errorMessage
+  }
+  // 27-1.4.3 切换ai是否正在输入状态为false,提示用户错误信息
+  isAiTyping.value = false
+  ElMessage.error(errorMessage)
+}
+
+// 会话列表
 const sessionList = ref([])
 // 26-4.2 获取会话列表
 const getSessionList = () => {
