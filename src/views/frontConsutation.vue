@@ -19,8 +19,8 @@
         <h4 class="session-title">会话列表</h4>
         <!-- 26-4.4 v-for遍历会话列表，渲染每个会话项 -->
         <div class="session-list">
-          <!-- 26-5.5 每一条会话项注册点击事件，被选中后，传递该会话id -->
-          <div @click="onSelectSession(session.id)" v-for="session in sessionList" :key="session.id" class="session-item">
+          <!-- 26-5.5 每一条会话项注册点击事件，被选中后，传递该会话对象 -->
+          <div @click="onSelectSession(session)" v-for="session in sessionList" :key="session.sessionId" class="session-item">
             <!-- 26-4.5 每个会话包含会话信息和删除按钮 -->
             <div class="session-info">
               <!-- 26-4.6 会话信息（会话标题、会话开始时间、会话最后一条消息内容、会话消息数量、会话持续时间） -->
@@ -109,7 +109,8 @@
 
         <!-- 26-5.7 v-for遍历对话消息记录，渲染每个消息项（消息项左侧头像、消息项右侧消息内容和消息发送时间） -->
         <!-- 26-5.7.1 当消息发送者是用户，消息添加user-message类，否则添加ai-message类 -->
-        <div class="message-item" v-for="msg in selectedSessionMessages" :key="msg.id" :class="msg.senderType == 1 ? 'user-message' : 'ai-message'">
+        <!-- 26-6.5 v-for遍历对话消息 chatMessages -->
+        <div class="message-item" v-for="msg in chatMessages" :key="msg.id" :class="msg.senderType == 1 ? 'user-message' : 'ai-message'">
           <div class="message-avatar">
             <!-- 26-5.7.2 对话左侧头像，根据消息发送者是用户或AI助手，显示不同的头像 -->
             <el-image :src= "msg.senderType == 1 ? userUrl : logoUrl" style="width: 18px; height: 18px;"/>
@@ -123,7 +124,7 @@
               </div>
 
               <!-- 26-5.8.2 当消息发送者是AI、且是正在输入状态，显示AI助手正在思考中状态 ..-->
-              <div v-if="msg.senderType == 2 && isAiTyping && !msg.content" class="tying-indictor">
+              <div v-if="msg.senderType == 2 && isAiTyping && !msg.content" class="typing-indicator">
                 <div v-for="(dot, index) in 3" :key="index" class="typing-dot"></div>
               </div>
 
@@ -143,6 +144,8 @@
       <!-- 26-2.6 聊天消息发送区域 -->
       <div class="chat-input">
         <!-- 26-2.6.1 左侧信息输入框，v-model绑定用户输入的消息，type="textarea"多行输入框 -->
+        <!-- 消息输入框:disabled绑定isAiTyping（判断AI是否正在输入） -->
+        <!-- 26-6.2 键盘注册按下事件 -->
         <div class="input-container">
             <el-input 
               v-model="userMessage"
@@ -153,11 +156,16 @@
               :disabled="isAiTyping"
               class="message-input"
               clearable></el-input>
+              <!-- 26-6.4 消息输入框下方显示按Enter发送，Shift+Enter换行，输入字符数 -->
+              <div class="input-footer">
+                <span>按Enter发送，Shift+Enter换行</span>
+                <span>{{ userMessage.length }}/500</span>
+              </div>
         </div>
         <!-- 26-2.6.2 右侧发送按钮 -->
         <!-- 26-3.4 发送消息按钮，注册发送事件 -->
-        <!-- 消息输入框:disabled绑定isAiTyping（判断AI是否正在输入） -->
-        <el-button @click="onSendMessage" class="send-btn" type="primary">
+        <!-- 26-6.1 当用户输入的消息为空或超过500个字符时，禁用发送按钮 -->
+        <el-button :disabled="!userMessage.trim() || userMessage.length > 500" @click="onSendMessage" class="send-btn" type="primary">
           <el-icon>
             <Promotion />
           </el-icon>
@@ -176,6 +184,7 @@ import { ref, onMounted } from 'vue'
 import { postSessionStartAPI, getSessionListAPI, deleteSessionAPI, getSessionMessagesAPI } from '@/api/user'
 import { ElMessage , ElMessageBox} from 'element-plus'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
+import { fetchEventSource } from '@microsoft/fetch-event-source'
 
 const logoUrl= new URL('@/assets/images/robot-fill.png', import.meta.url).href
 const likeUrl= new URL('@/assets/images/like.png', import.meta.url).href
@@ -184,7 +193,7 @@ const userUrl= new URL('@/assets/images/users.png', import.meta.url).href
 const chatMessages = ref([])
 // 定义用户输入的消息
 const userMessage = ref('')
-
+const userAIMessage = ref('')
 // 当前会话
 const currentSession = ref(null)
 
@@ -200,36 +209,18 @@ const createSession = () => {
   currentSession.value = newSession
 }
 
-// 26-3.3 开始新会话(新对话转化为正式会话)，接收用户输入的消息
-const startNewSession = async (message) => {
-  // 26-3.3.1 定义会话参数（会话消息、会话标题）
-  const sessionParams = {
-    initialMessage: message,// 初始消息
-    sessionTitle: `心愈AI助手 - ${new Date().toLocaleString()}` ,
-  }
-
-  // 26-3.3.2 调用开始新会话接口，传递会话参数，获取开始会话数据
-  postSessionStartAPI(sessionParams).then(res => {
-    // 26-3.3.3 将获取到的数据转换为前端会话对象格式（会话状态为正式会话ACTIVE）
-    const session = {
-      sessionId: res.sessionId,
-      sessionTitle: sessionParams.sessionTitle,
-      status: 'ACTIVE',
-    }
-    // 26-3.3.4 将新会话作为当前会话（新会话更新为正式会话状态）
-    Object.assign(currentSession.value, session)
-  })
-
-  // 26-4.2.4 每开始一次新对话，就更新会话列表
-  getSessionList()
-}
-
 // 定义AI是否正在输入
 const isAiTyping = ref(false)
 // 26-3.5 发送消息事件
 const onSendMessage = () => {
   // 26-3.5.1 将用户输入的消息去除首尾空格字符
   const message = userMessage.value.trim()
+  chatMessages.value.push({
+    senderType: 1,
+    content: message,
+    createdAt: new Date().toLocaleString(),
+  })
+
   // 26-3.5.2 检查用户是否输入了消息,如果没有输入,则返回
   if (!message) {return}
 
@@ -252,7 +243,32 @@ const onSendMessage = () => {
   }
 }
 
-// 会话列表
+// 26-3.3 开始新会话(新对话转化为正式会话)，接收用户输入的消息
+const startNewSession = async (message) => {
+  // 26-3.3.1 定义会话参数（会话消息、会话标题）
+  const sessionParams = {
+    initialMessage: message,// 初始消息
+    sessionTitle: `心愈AI助手 - ${new Date().toLocaleString()}` ,
+  }
+
+  // 26-3.3.2 调用开始新会话接口，传递会话参数，获取开始会话数据
+  await postSessionStartAPI(sessionParams).then(res => {
+    // 26-3.3.3 将获取到的数据转换为前端会话对象格式（会话状态为正式会话ACTIVE）
+    const session = {
+      sessionId: res.sessionId,
+      sessionTitle: sessionParams.sessionTitle,
+      status: 'ACTIVE',
+    }
+    // 26-3.3.4 将新会话作为当前会话（新会话更新为正式会话状态）
+    Object.assign(currentSession.value, session)
+  })
+
+  // 26-4.2.4 每开始一次新对话，就更新会话列表
+  getSessionList()
+  // 开始流式回复,传递会话id和用户输入的消息
+  // startAiResponse(currentSession.value.sessionId, message)
+}
+
 const sessionList = ref([])
 // 26-4.2 获取会话列表
 const getSessionList = () => {
@@ -280,21 +296,42 @@ const onDeleteSession = (sessionId) => {
     })
 }
 
-// 被选中的会话消息记录
-const selectedSessionMessages = ref([])
 
-// 26-5.6 选择会话事件，接收会话id
-const onSelectSession = (sessionId)=>{
-  // 26-5.6.1 调用获取会话的消息记录接口，传递会话id
-  getSessionMessagesAPI(sessionId).then(res => {
-    // 26-5.6.2 将获取到的会话消息记录数据赋值给selectedSessionMessages
-    selectedSessionMessages.value = res
-  })
-}
 
 // 换行处理
 const formatMessage = (message) => {
   return message.replace(/\n/g, '<br>')
+}
+
+// 被选中的会话消息列表
+// const selectedMessage = ref([])
+// 26-5.6 选择会话事件，接收会话对象
+const onSelectSession = (session)=>{
+  // 26-5.6.1 调用获取会话的消息记录接口，传递会话id
+  getSessionMessagesAPI(session.id).then(res => {
+    // 26-5.6.2 将获取到的会话消息记录数据赋值给对话消息列表selectedMessages
+    // 26-6.4 将接口获取到的会话消息记录数据赋值给对话消息列表chatMessages
+    chatMessages.value = res
+    // selectedMessage.value = res
+  })
+  // 26-5.6.3 更新当前会话对象数据为选中的会话对象数据
+  const sessionData = {
+    sessionId: "session_" + session.id,
+    sessionTitle: session.sessionTitle,
+    status: 'ACTIVE',
+  }
+  currentSession.value = sessionData
+}
+
+// 26-6.3 键盘按下事件
+const onKeyDownMessage = (e) => {
+  // 26-6.3.1 按住 Shift + Enter , 允许换行，不触发发送
+  if (e.shiftKey && e.key === 'Enter') return
+  // 26-6.3.2 按下 Enter, 阻止默认换行，执行发送
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    onSendMessage()
+  }
 }
 
 onMounted(() => {
