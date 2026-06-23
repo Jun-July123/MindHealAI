@@ -13,14 +13,15 @@
           <div class="status-dot"></div>在线中
         </div>
       </div>
-
+      
+      <!-- 27-3.4 动态渲染情绪花园 -->
       <!-- 27-2.1 基本信息-情绪花园(标题、情绪信息、温暖建议) -->
       <div class="emotion-garden">
         <h4 class="garden-title">情绪花园</h4>
         <!-- 27-2.2 情绪信息包括情绪名称和情绪分数 -->
         <div class="emotion-info">
-          <div class="emotion-name">中性</div>
-          <div class="emotion-score">80</div>
+          <div class="emotion-name">{{currentEmotion.primaryEmotion}}</div>
+          <div class="emotion-score">{{currentEmotion.emotionScore}}</div>
         </div>
         
         <!-- 27-2.3 温暖建议包括情绪状态、情绪强度、建议、治愈行动、风险提示-->
@@ -28,49 +29,55 @@
           <!-- 情绪状态 -->
           <div class="emotion-status-text">
             <span class="status-label">今天感觉</span>
-            <span class="status-emotion">很不错</span>
+            <!-- 27-3.4.1 根据情绪是否为负面情绪判断情绪状态，如果是负面情绪则显示“需要关注”，否则显示“很不错哦” -->
+            <span class="status-emotion">{{currentEmotion.isNegative ? '需要关注' : '很不错呢'}}</span>
           </div>
 
           <!-- 情绪强度 -->
-          <div class="emotion-intensity">·
+          <div class="emotion-intensity">
             <span class="intensity-dots">
-              <span class="dot" v-for="index in 3" :key="index" ></span>
+              <!-- 27-3.4.3 v-for渲染3个dot，调用情绪强度函数传递情绪分数，获取情绪强度 -->
+              <!-- 当情绪强度大于等于index时，添加active类 -->
+              <span class="dot" 
+                v-for="index in 3" 
+                :key="index" 
+                :class="{'active': getIntensityClass(currentEmotion.emotionScore) >= index}" >
+              </span>
             </span>
-            <span class="intensity-text">
-               良好
-            </span>
+            <!-- 27-3.4.5 调用获取风险提示的函数，传递情绪风险等级，获取风险程度 -->
+            <span class="intensity-text">{{ getRiskText(currentEmotion.riskLevel) }}</span>
           </div>
 
           <!-- 建议 -->
-          <div class="warm-suggestion" >
+          <!-- 27-3.4.6 当存在情绪建议时，显示建议 -->
+          <div class="warm-suggestion" v-if="currentEmotion.suggestion">
             <div class="suggestion-icon">💝</div>
             <div class="suggestion-content">
               <div class="suggestion-title">给你一些建议</div>
-              <div class="suggestion-text">继续保持</div>
+              <div class="suggestion-text">{{ currentEmotion.suggestion }}</div>
             </div>
           </div>
           
           <!-- 治愈行动 -->
-          <div class="healing-actions">
+          <!-- 27-3.4.7 当治愈行动列表长度 > 0时，显示治愈行动 -->
+          <div class="healing-actions" v-if="currentEmotion.improvementSuggestions.length > 0">
               <div class="actions-title">治愈小行动</div>
               <div class="actions-list">
-                <div class="action-item">
+                <!-- 27-3.4.8 v-for遍历治愈行动列表，渲染每个治愈行动项 -->
+                <div v-for="action in currentEmotion.improvementSuggestions" :key="action" class="action-item">
                   <div class="action-icon">✨</div>
-                  <div class="action-text">多休息</div>
-                </div>
-                <div class="action-item">
-                  <div class="action-icon">✨</div>
-                  <div class="action-text">多喝水</div>
+                  <div class="action-text">{{ action }}</div>
                 </div>
               </div>
           </div>
 
           <!-- 风险提示 -->
-          <div class="risk-notice">
+          <!-- 27-3.4.9 当情绪为消极且情绪风险等级大于1时，显示风险提示 -->
+          <div class="risk-notice" v-if="currentEmotion.isNegative && currentEmotion.riskLevel > 1">
             <div class="notice-icon">🤗</div>
             <div class="notice-content">
               <div class="notice-title">温馨提示</div>
-              <div class="notice-text">好好爱自己</div>
+              <div class="notice-text">{{currentEmotion.riskDescription}}</div>
             </div>
           </div>
         </div>
@@ -243,10 +250,11 @@
 <script setup>
 import { Promotion } from '@element-plus/icons-vue';
 import { ref, onMounted } from 'vue'
-import { postSessionStartAPI, getSessionListAPI, deleteSessionAPI, getSessionMessagesAPI } from '@/api/user'
+import { postSessionStartAPI, getSessionListAPI, deleteSessionAPI, getSessionMessagesAPI , getSessionEmotionAPI} from '@/api/user'
 import { ElMessage , ElMessageBox} from 'element-plus'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { fetchEventSource } from '@microsoft/fetch-event-source'
+import { isNavigationFailure } from 'vue-router';
 
 const logoUrl= new URL('@/assets/images/robot-fill.png', import.meta.url).href
 const likeUrl= new URL('@/assets/images/like.png', import.meta.url).href
@@ -406,6 +414,8 @@ const startAiResponse = (sessionId, userMessage) => {
       if(messageType === 'done') {
         isAiTyping.value = false
         controller.abort() // 终止fetch请求
+        // 27-3.6 当ai回复结束时，调用获取会话的情绪分析，传递会话id，进行情绪分析
+        getSessionEmotion(currentSession.value.sessionId)
       }
       
       const messageData = JSON.parse(row)
@@ -425,7 +435,8 @@ const startAiResponse = (sessionId, userMessage) => {
     },
     // 27-1.2.9 流式建立关闭后，执行一次onClose（开始情绪分析）
     onClose: () => {
-      // 开始情绪分析
+      // 27-3.7 当关闭流式对话时，调用会话的情绪分析，传递会话id，进行情绪分析
+      getSessionEmotion(currentSession.value.sessionId)
     },
   })
 }
@@ -487,6 +498,10 @@ const onSelectSession = (session)=>{
     chatMessages.value = res
     // selectedMessage.value = res
   })
+
+  // 27-3.5 选中会话获取会话消息记录后，调用获取会话的情绪分析，传递会话id，进行情绪分析
+  getSessionEmotion(session.id)
+
   // 26-5.6.3 更新当前会话对象数据为选中的会话对象数据
   const sessionData = {
     sessionId: "session_" + session.id,
@@ -507,7 +522,45 @@ const onKeyDownMessage = (e) => {
   }
 }
 
+//27-3.2 定义当前情绪分析数据(主要情绪、情绪分数、是否负面情绪、建议、风险等级、改进建议、风险描述)
+const currentEmotion = ref({
+  primaryEmotion:'中性',
+  emotionScore: 60,
+  isNegative: false,
+  suggestion: '情绪状态平稳',
+  riskLevel: 0,
+  improvementSuggestions:[],
+  riskDescription: '情绪状态平稳'
+})
 
+// 27-3.3 获取会话的情绪分析数据，接收会话id
+const getSessionEmotion = (sessionId) =>{
+  // 27-3.3.1 确保sessionId格式正确，以session_开头，否则在sessionId前添加session_前缀
+  const id = sessionId.toString().startsWith('session_') ? sessionId : `session_${sessionId}`
+  // 27-3.3.2 调用获取会话的情绪分析接口，传递会话id
+  getSessionEmotionAPI(id).then(res => {
+    // 27-3.3.3 将获取到的情绪分析结果赋值给currentEmotion
+    currentEmotion.value = res
+  })
+}
+
+// 27-3.4.2 定义获取情绪强度的函数，接收情绪分数，返回情绪强度
+const getIntensityClass = (score) => {
+  if(score >= 60) return 3
+  else if(score >= 30) return 2
+  else return 1
+}
+
+// 27-3.4.4 定义获取风险提示的函数，接收情绪风险等级，返回风险程度
+const getRiskText = (level) => {
+  switch(level) {
+    case 0:return '正常'
+    case 1:return '关注'
+    case 2:return '预警'
+    case 3:return '风险'
+    default:return '未知'
+  }
+}
 
 
 

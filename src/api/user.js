@@ -42,3 +42,12 @@ export const getSessionMessagesAPI = (sessionId) => {
     method: 'get',
   })
 }
+
+// 27-3.1 api/user.js配置导出获取会话情绪接口，接收会话id
+export const getSessionEmotionAPI = (sessionId) => {
+  return service({
+    url: `/psychological-chat/session/${sessionId}/emotion`,
+    method: 'get',
+  })
+}
+
