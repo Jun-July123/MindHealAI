@@ -30,7 +30,7 @@
           <div class="emotion-status-text">
             <span class="status-label">今天感觉</span>
             <!-- 27-3.4.1 根据情绪是否为负面情绪判断情绪状态，如果是负面情绪则显示“需要关注”，否则显示“很不错哦” -->
-            <span class="status-emotion">{{currentEmotion.isNegative ? '需要关注' : '很不错呢'}}</span>
+            <span class="status-emotion">{{currentEmotion.isNegative ? '需要温暖' : '很不错呢'}}</span>
           </div>
 
           <!-- 情绪强度 -->
@@ -194,7 +194,7 @@
 
               <!-- 26-5.8.2 当消息发送者是AI、且是正在输入状态，显示AI助手正在思考中状态 ..-->
               <div v-if="msg.senderType == 2 && isAiTyping && !msg.content" class="typing-indicator">
-                <div v-for="(dot, index) in 3" :key="index" class="typing-dot"></div>
+                <div v-for="(dot, index) in 3" :key="index" class="typing-dot active"></div>
               </div>
 
               <!-- 26-5.8.3 当消息发送者是AI，引入MarkdownRenderer组件，传递消息内容，格式化显示AI助手返回消息 -->
@@ -357,6 +357,8 @@ const startAiResponse = (sessionId, userMessage) => {
     ElMessage.warning('小愈正在思考中,请稍后再试...')
     return
   }
+  // 没有正在输入,则设置为正在输入
+  isAiTyping.value = true
 
   // 27-1.1.2 定义ai消息对象（包含id、senderType、content、createAt时间）
   const aiMessage = {
@@ -368,7 +370,6 @@ const startAiResponse = (sessionId, userMessage) => {
 
   // 27-1.1.3 将ai消息添加到对话列表chatMessages
   chatMessages.value.push(aiMessage)
-
   // 27-1.1.4 下载ai流式回复依赖npm install @microsoft/fetch-event-source
   // 27-1.1.5 引入fetchEventSource流式接口
 
@@ -539,6 +540,7 @@ const getSessionEmotion = (sessionId) =>{
   const id = sessionId.toString().startsWith('session_') ? sessionId : `session_${sessionId}`
   // 27-3.3.2 调用获取会话的情绪分析接口，传递会话id
   getSessionEmotionAPI(id).then(res => {
+    console.log('获取情绪分析结果:', res)
     // 27-3.3.3 将获取到的情绪分析结果赋值给currentEmotion
     currentEmotion.value = res
   })

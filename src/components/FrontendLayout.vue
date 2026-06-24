@@ -14,7 +14,7 @@
           <router-link to="/" class="nav-link">首页</router-link>
           <router-link to="/consultation" v-if="isLogin" class="nav-link">AI咨询</router-link>
           <router-link to="/emotion-diary" class="nav-link">情绪日记</router-link>
-          <router-link to="/knowledge" class="nav-djdlink">知识库</router-link>
+          <router-link to="/knowledge" class="nav-link">知识库</router-link>
           <!-- 26-1.3 退出登录按钮注册点击事件 -->
           <el-button @click="onLogout" v-if="isLogin" class="logout-btn">退出登录</el-button>
           <template v-else>
