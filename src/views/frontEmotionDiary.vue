@@ -8,7 +8,7 @@
       </div>
     </div>
 
-    <!-- 28-1.2 情绪内容包括情绪评分、主要情绪及情绪详细记录及按钮四部分 -->
+    <!-- 28-1.2 情绪内容包括情绪评分、主要情绪及情绪详细记录三部分 -->
     <div class="content">
       <!-- 28-1.3 情绪评分（标题和星级评分） -->
       <div class="diary-card">
@@ -96,7 +96,7 @@
           <div class="action-buttons">
             <!-- 28-2.4 重置按钮注册点击事件 -->
             <el-button @click="onResetForm">重置</el-button>
-            <!-- 28-2.6 提交按钮注册点击事件 -->
+            <!-- 28-2.7 提交按钮注册点击事件 -->
             <el-button @click="onSubmitForm" type="primary" size="large">提交记录</el-button>
           </div>
 
@@ -157,16 +157,16 @@ const onResetForm = () => {
   })
 }
 
-// 28-2.7 提交记录事件
+// 28-2.8 提交记录事件
 const onSubmitForm = () => {
-  // 28-2.7.1 如果当前没有进行情绪评分、提示选择情绪评分
+  // 28-2.8.1 如果当前没有进行情绪评分、提示选择情绪评分
   if (!diaryForm.moodScore) {
     ElMessage.error('请选择情绪评分')
     return
   }
-  // 28-2.7.2 调用提交日志记录接口、传递日记表单
+  // 28-2.8.2 调用提交日志记录接口、传递日记表单
   postEmotionDiaryAPI(diaryForm).then(()=>{
-    // 28-2.7.3 提交成功、显示提交成功并重置表单
+    // 28-2.8.3 提交成功、显示提交成功并重置表单  
     ElMessage.success('提交成功')
     onResetForm()
   })
