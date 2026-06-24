@@ -186,7 +186,7 @@ const onSubmitForm = () => {
     // padding: 20px;
     background: linear-gradient(135deg, #fafbfc 0%, #f7f9fc 50%, #f2f6fa 100%);
     .header-section {
-        background: linear-gradient(135deg, #7ED321 0%, #F5A623 100%);
+        background: linear-gradient(135deg, #82b5ef 0%, #f97cb9 100%);
         color: white;
         padding: 48px;
         // width: 100%;

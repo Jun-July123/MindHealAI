@@ -159,7 +159,9 @@ router.beforeEach((to, from, next) => {
       next('/auth/login')
     } else {
       next()
+      // next('/')
     }
+    //  next('/')
   }
 })
 

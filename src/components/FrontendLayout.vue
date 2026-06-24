@@ -6,7 +6,7 @@
         <!-- 25-1.5.1 左侧logo,el-image配置logo图片 -->
         <div class="brand-section">
           <el-image :src="logoUrl" class="brand-logo" style="height: 50px; width: 50px;" />
-          <h1 class="brand-name">心理健康AI助手</h1>
+          <h1 class="brand-name">心愈智伴AI助手</h1>
         </div>
         <!-- 25-1.5.2 右侧导航栏，router-link配置首页、AI咨询、情绪日记、知识库、登录/注册、退出登录按钮 -->
         <!-- 25-1.5.3 只有登录后才显示AI咨询、退出登录按钮；在未登录时，才显示登录、注册按钮 -->
@@ -34,7 +34,7 @@
     <!-- 25-1.7 底部页脚，包含页脚内容 -->
     <div class="footer-container">
       <div class="footer-bottom">
-        <p> &copy; 2026 心理健康AI助手. All rights reserved</p>
+        <p> &copy; 2026 心愈智伴AI助手. All rights reserved</p>
       </div>
     </div>
   </div>

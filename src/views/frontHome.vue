@@ -29,7 +29,8 @@ const logoUrl = new URL('@/assets/images/robot-fill.png', import.meta.url).href
 
 <style scoped lang="scss">
 .home-container {
-    background: linear-gradient(90deg, rgb(74, 156, 140) 0%, rgb(61, 138, 122) 100%) rgba(74, 156, 140, 0.95);
+    // background: linear-gradient(90deg, rgb(74, 156, 140) 0%, rgb(61, 138, 122) 100%) rgba(74, 156, 140, 0.95);
+    background: linear-gradient(90deg, rgb(46, 114, 165) 0%, rgb(29, 88, 133) 100%) rgba(46, 114, 165, 0.95);background: linear-gradient(90deg, rgb(102, 178, 237) 0%, rgb(70, 146, 204) 100%) rgba(102, 178, 237, 0.95);
     color: white;
     padding: 5rem 0;
     height: calc(100vh - 285px);

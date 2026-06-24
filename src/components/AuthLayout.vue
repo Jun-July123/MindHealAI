@@ -4,8 +4,8 @@
     <!-- 12-1.3 左侧包含标题、文本和图标 -->
     <div class="left-section">
       <div class="content">
-        <h2 class="title">心理健康AI助手</h2>
-        <p class="text">登录后即可开始使用心理健康AI助手</p>
+        <h2 class="title">心愈智伴AI助手</h2>
+        <p class="text">登录后即可开始使用心愈智伴AI助手</p>
         <div class="robot">
           <!-- <el-image :src="iconUrl" style="width: 50px; height: 50px;" alt="心理健康AI助手"></el-image> -->
            <el-image :src="logoUrl" class="brand-logo" />
@@ -33,7 +33,9 @@ const logoUrl =  new URL('../assets/images/robot-fill.png', import.meta.url).hre
         justify-content: center;
         align-items: center;
         flex: 1;
-        background: linear-gradient(90deg, rgb(74, 156, 140) 0%, rgb(61, 138, 122) 100%) rgba(74, 156, 140, 0.95);
+        // background: linear-gradient(90deg, rgb(74, 156, 140) 0%, rgb(61, 138, 122) 100%) rgba(74, 156, 140, 0.95);
+        background: linear-gradient(90deg, rgb(46, 114, 165) 0%, rgb(29, 88, 133) 100%) rgba(46, 114, 165, 0.95);background: linear-gradient(90deg, rgb(102, 178, 237) 0%, rgb(70, 146, 204) 100%) rgba(102, 178, 237, 0.95);
+// background: linear-gradient(90deg, rgb(163, 213, 247) 0%, rgb(130, 193, 235) 100%) rgba(163, 213, 247, 0.95);
         height: 100vh;
         .content {
             display: flex;
@@ -76,3 +78,5 @@ const logoUrl =  new URL('../assets/images/robot-fill.png', import.meta.url).hre
     }
 }
 </style>
+
+

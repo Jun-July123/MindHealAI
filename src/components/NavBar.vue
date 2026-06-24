@@ -17,7 +17,7 @@
         <!-- 6-2.6 触发下拉的用户区flex布局，包含用户头像、用户名及下拉图标 -->
         <div class="flex-box">
           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-          <p class="user-name">用户名</p>
+          <p class="user-name">{{ username }}</p>
           <el-icon><ArrowDown /></el-icon>
         </div>
 
@@ -43,7 +43,7 @@ import { postUserLogoutAPI } from '@/api/admin'
 // 24-1.1 NavBar引入使用useRouter路由,创建路由实例
 const router = useRouter()
 const route = useRoute()
-
+const username = JSON.parse(localStorage.getItem('userInfo')).username
 const adminStore = useAdminStore()
 // 8-1.7 切换折叠状态事件,调用toggleCollapse
 const handleCollapse = () => {

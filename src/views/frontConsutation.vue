@@ -146,7 +146,7 @@
             <el-image :src="likeUrl" style="width: 30px; height: 30px;"/>
           </div>
           <div class="chat-info">
-            <h3 class="assistant-name">心愈AI助手</h3>
+            <h3 class="assistant-name">心愈智伴AI助手</h3>
             <p>倾听您的故事，用温暖和智慧伴你左右~</p>
           </div>
         </div>
@@ -170,7 +170,7 @@
           <!-- 26-2.5.3 对话右侧消息内容 -->
           <div class="message-content">
             <div class="message-bubble">
-              <p>欢迎来到心愈AI助手，我是您的智能助手，您可以与我进行对话。</p>
+              <p>欢迎来到心愈智伴 AI 助手，我是陪伴你的小愈，心事、情绪、烦恼都可以放心和我聊聊。</p>
             </div>
             <div class="message-time">刚刚</div>
           </div>
@@ -205,7 +205,7 @@
             </div>
 
             <!-- 26-5.8.5 消息下方显示发送时间 -->
-            <div class="message-time">{{ msg.senderType == 2 && isAiTyping ? '正在输入...' : msg.createdAt }}</div>
+            <div class="message-time">{{ msg.senderType == 2 && isAiTyping ? '正在思考...' : msg.createdAt }}</div>
           </div>
         </div>
       </div>
@@ -588,7 +588,8 @@ onMounted(() => {
         width: 320px;
         .ai-assistant-info {
             margin-bottom: 20px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 252, 248, 0.95) 100%);
+            // background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 252, 248, 0.95) 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(232, 244, 255, 0.95) 100%);
             border-radius: 16px;
             padding: 16px;
             box-shadow: 0 8px 32px rgba(251, 146, 60, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -598,7 +599,9 @@ onMounted(() => {
             .breathing-circle {
                 width: 60px;
                 height: 60px;
-                background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
+                // background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
+                // background: linear-gradient(135deg, #8ac5f6 0%, #5aadf6 100%);
+                background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
@@ -611,7 +614,8 @@ onMounted(() => {
             .assistant-name {
                 font-size: 16px;
                 font-weight: 700;
-                background: linear-gradient(135deg, #fb923c, #f59e0b);
+                // background: linear-gradient(135deg, #fb923c, #f59e0b);
+                background: linear-gradient(135deg, #74b9ff, #0984e3);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 text-align: center;
@@ -950,6 +954,7 @@ onMounted(() => {
         flex: 1;
         .chat-header {
             background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
+            // background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
             color: white;
             padding: 20px 24px;
             display: flex;

@@ -73,7 +73,7 @@
         layout="prev, pager, next"  
         :page-size="pagination.size"
         :total="pagination.total"
-        @current-change="onPaginationChange"
+        @change="onPaginationChange"
         style="margin-top: 25px;"
         background
       />
@@ -169,7 +169,7 @@ onMounted(() => {
         }
     }
     .header-section {
-        background: linear-gradient(135deg, #f59e0b 0%, #8b5cf6 100%);
+        background: linear-gradient(135deg, #82b5ef 0%, #f97cb9 100%);
         color: white;
         padding: 48px;
         .header-content {
@@ -246,3 +246,5 @@ onMounted(() => {
     }
 }
 </style>
+
+

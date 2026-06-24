@@ -1,5 +1,56 @@
-# Vue 3 + Vite
+🧠 心愈智伴 AI 助手（前端）
+基于 Vue3 + Vite + Pinia + Element Plus 开发的 AI 心理智能陪伴平台，支持 AI 流式对话、情绪日记、知识库、后台数据可视化、完整权限管理体系，界面清新治愈、交互流畅、工程化规范完整。
+✨ 项目亮点
+- AI 流式对话：原生 SSE 长连接实现 AI 逐字打字流式输出，支持 Markdown 渲染、异常断网重连、连接销毁防泄漏
+- 完整权限体系：Router4 全局路由守卫 + Pinia 全局状态管理，实现 Token 鉴权、401 过期拦截、前后台权限隔离
+- 数据可视化大屏：基于 ECharts 实现多维度运营数据图表，解决窗口节流适配、页面销毁内存泄漏问题
+- 高复用组件封装：统一封装搜索、弹窗、分页、上传、布局等通用业务组件，大幅降低冗余代码
+- 全套工程化优化：Axios 全局异常拦截、请求防抖节流、Sass 主题定制、移动端响应式适配、表单多层校验
+🛠 技术栈
+- 构建工具：Vite
+- 核心框架：Vue3（Composition API）
+- 状态管理：Pinia
+- 路由管理：Vue Router 4
+- UI 组件库：Element Plus
+- 样式方案：Sass 全局主题定制
+- 网络请求：Axios 二次封装
+- 实时通信：EventSource（SSE 流式长连接）
+- 数据可视化：ECharts
+- 富文本渲染：Markdown 解析渲染、XSS 防御
+📁 项目结构
+src
+ ├── api          # 接口统一管理
+ ├── assets       # 静态资源、全局样式
+ ├── components   # 通用业务组件封装
+ ├── layouts      # 全局布局组件
+ ├── router       # 路由 + 全局权限守卫
+ ├── stores       # Pinia 全局状态管理
+ ├── utils        # 工具类、axios封装、防抖节流
+ ├── views        # 所有页面视图
+ └── App.vue      # 入口组件
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
-
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+🚀 启动项目
+1. 安装依赖
+npm install
+2. 启动开发环境
+npm run dev
+3. 打包上线
+npm run build
+🎯 核心功能模块
+1. AI 智能对话模块：SSE 流式输出、Markdown 渲染、防抖防重、断网异常捕获、连接自动销毁
+2. 用户体系：注册、登录、Token 鉴权、状态持久化、401 过期自动登出
+3. 情绪日记模块：日记编辑、草稿缓存、表单校验、提交防抖
+4. 知识库模块：文章列表、详情渲染、空数据兜底、搜索筛选
+5. 后台数据大盘：多图表数据可视化、窗口自适应、节流优化、防内存泄漏
+6. 权限管理：游客拦截、登录拦截、前后台路由权限隔离
+💡 项目优化点
+- ✅ Axios 全局统一异常捕获、loading 强制关闭、401 自动处理
+- ✅ 路由守卫鉴权，完善前后台权限隔离机制
+- ✅ 搜索、提交、AI 发送全场景防抖节流优化
+- ✅ ECharts 图表销毁、节流 resize，彻底解决内存泄漏
+- ✅ SSE 长连接精准销毁，避免多连接堆积
+- ✅ 全局 Sass 主题统一，消除 UI 视觉割裂
+- ✅ 全页面移动端响应式适配
+- ✅ 图片、表单、请求全方位校验与容错处理
+👨‍💻 开发作者
+独立全量开发前端所有页面、组件、工程化配置与性能优化

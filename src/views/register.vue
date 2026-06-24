@@ -64,15 +64,15 @@ import { useRouter } from 'vue-router'
 //   "gender":1,
 //   "userType":1//用户类型 1-普通用户 2-管理员
 // })
-const formData = reactive({
-  username: '3.14',
-  email: '2323211111@qq.com',
-  nickname: 'xiaoyang',
-  phone: '15556636363',
-  password: '123456',
-  confirmPassword: '123456',
-  gender: 1, // 文档：1男/2女，禁止0
-  userType: 1 // 用户端固定1
+const formData = ref({
+    "username": "abbb",
+    "email": "443542407@qq.com",
+    "nickname": "Lalala",
+    "phone": "15336663236",
+    "password": "123456",
+    "confirmPassword": "123456",
+    "gender": 1,
+    "userType": 1
 })
 
 // 25-3.2 定义注册表单验证规则
@@ -98,7 +98,7 @@ const rules = reactive({
     { required: true, message: '请确认密码', trigger: 'blur' },
     {
       validator: (_, val, cb) => {
-        val !== formData.password ? cb(new Error('两次密码不一致')) : cb()
+        val !== formData.value.password ? cb(new Error('两次密码不一致')) : cb()
       },
       trigger: 'blur'
     }
@@ -119,40 +119,69 @@ const router = useRouter()
 //       return
 //     }
 //     // 25-4.3 验证表单成功，调用注册用户接口，传递表单数据
-//     postUserAddAPI(formData).then(res => {
+//     postUserAddAPI(formData.value).then(res => {
 //       // 25-4.3.1 如果注册失败，显示错误信息
-//       if(res.data.code === 'BUSINESS_ERROR'){
-//           ElMessage.error(res.data.message)
-//         }
+//       // if(res.data.code === 'BUSINESS_ERROR'){
+//       //     ElMessage.error(res.data.message)
+//       //   }
 //         // 25-4.3.2 注册成功，显示成功信息，跳转登录页
-//         else{
+//         // else{
 //           ElMessage.success('注册成功')
 //           router.push('/auth/login')
-//         }  
+//         // }  
 //       })  
 //   })
   
 // }
-const onRegister = (form) => {
+
+// 吗
+// const onRegister = (form) => {
+//   if (!form) return
+//   form.validate(async (valid) => {
+//     if (!valid) return
+//     // 直接传完整formData，不要删除confirmPassword
+//     try {
+//       const res = await postUserAddAPI(formData.value)
+//       console.log('后端返回原始数据', res)
+//       if (res.code == 200) {
+//         ElMessage.success('注册成功')}
+//       // } else {
+//       //   ElMessage.error(res.msg || '注册失败，请检查填写信息')
+//       // }
+//     } catch (err) {
+//       console.error('请求异常', err)
+//       ElMessage.error('服务器响应异常，请检查填写内容')
+//     }
+//     // 25-3.6.2 注册成功，跳转登录页
+//     // router.push('/auth/login')
+//   })
+// }
+const loading = ref(false)
+// 注册核心方法 - 完全适配后端接口、修复所有逻辑BUG
+const onRegister = async (form) => {
   if (!form) return
-  form.validate(async (valid) => {
-    if (!valid) return
-    // 直接传完整formData，不要删除confirmPassword
-    try {
-      const res = await postUserAddAPI(formData.value)
-      console.log('后端返回原始数据', res)
-      if (res.code === 200) {
-        ElMessage.success('注册成功')
-      } else {
-        ElMessage.error(res.msg || '注册失败，请检查填写信息')
-      }
-    } catch (err) {
-      console.error('请求异常', err)
-      ElMessage.error('服务器响应异常，请检查填写内容')
+  // 表单整体校验
+  const valid = await form.validate()
+  if (!valid) return
+
+  loading.value = true
+  try {
+    // 完整传递后端所需全部参数，不做剔除，严格匹配接口文档
+    const res = await postUserAddAPI(formData.value)
+    // 统一处理后端返回状态
+    if (res.code === 200) {
+      ElMessage.success('注册成功，请前往登录')
+      // 仅成功跳转，失败不跳转
+      router.push('/auth/login')
+    } else {
+      ElMessage.error(res.msg || '注册失败，请检查填写信息')
     }
-    // 25-3.6.2 注册成功，跳转登录页
-    router.push('/auth/login')
-  })
+  } catch (err) {
+    ElMessage.error('注册失败，请检查网络或稍后重试')
+  } finally {
+    // 强制关闭loading，彻底解决按钮卡死
+    loading.value = false
+  }
 }
 </script>
 
@@ -189,3 +218,5 @@ const onRegister = (form) => {
     }
 }
 </style>
+
+

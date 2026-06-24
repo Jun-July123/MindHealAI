@@ -156,9 +156,6 @@ const rules = ref({
   title: [
     { required: true, message: '请输入文章标题', trigger: 'blur' }
   ],
-  content: [
-    { required: true, message: '请输入文章内容', trigger: 'blur' }
-  ],
   categoryId: [
     { required: true, message: '请选择分类', trigger: 'change' }
   ],
@@ -366,3 +363,5 @@ const handleClose = () => {
   }
 }
 </style>
+
+

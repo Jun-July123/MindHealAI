@@ -15,10 +15,10 @@
       <!-- 5-1.1 设置侧边菜单栏标题区域logo及标题信息卡片 -->
       <div class="brand">
         <!-- 5-1.3 使用logo图片 -->
-        <el-image class="brand-logo" :src="iconUrL" alt="logo"/>
+        <el-image class="brand-logo" :src="logoUrl" alt="logo"/>
         <!-- 8-1.11 侧边菜单栏标题区域根据iscollapse状态显示或隐藏 -->
         <div v-show="!isCollapse" class="info-card">
-          <h1 class="brand-title">心理健康AI助手</h1>
+          <h1 class="brand-title">心愈智伴AI助手</h1>
           <span class="brand-subtitle">后台管理系统</span>
         </div>
       </div>
@@ -50,6 +50,7 @@ const isCollapse = computed(() => adminStore.isCollapse)
 // 5-1.2 引入logo图片
 const iconL = new URL('@/assets/images/logo.png', import.meta.url)
 const iconUrL = iconL.href
+const logoUrl = new URL('@/assets/images/机器人.png', import.meta.url).href
 // console.log(iconL);
 // console.log(iconUrL);
 
@@ -91,7 +92,7 @@ const selectMenu = (key) => {
     align-items: center;
     justify-content: center;
     padding: 20px 0;
-    background-color: #c3effe;
+    background-color: #dbf3fe;
     border-bottom: 1px solid #e4e7ed;
     // 5-1.4.2 logo图片样式：宽、高、外边距
     .brand-logo{
