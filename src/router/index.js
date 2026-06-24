@@ -106,8 +106,17 @@ const frontendRoutes = [
       {
         path: 'knowledge',
         component: () => import('@/views/frontKnowledge.vue'),
+        props: true,//知识文章详情的id可以通过props传递接收
         meta: {
           title: '知识库',
+        }
+      },
+      {
+        // 29-2.4 router/index.js 创建文章详情组件，配置为二级路由，接收文章id
+        path: 'knowledge/article/:id',
+        component: () => import('@/views/frontDetailArticle.vue'),
+        meta: {
+          title: '文章详情',
         }
       },
     ]

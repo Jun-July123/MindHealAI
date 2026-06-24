@@ -15,7 +15,8 @@
       <div class="recommend-section">
         <div class="section-title">推荐阅读</div>
           <div class="recommend-list">
-            <div v-for="item in recommendList" :key="item.id" class="recommend-item">
+            <!-- 29-2.1 推荐列表，文章注册点击事件、传递文章id -->
+            <div @click="onDetailArticle(item.id)"  v-for="item in recommendList" :key="item.id" class="recommend-item">
               <h4>{{ item.title }}</h4>
               <p class="read-count">
                 <el-icon> <History /></el-icon> 
@@ -28,7 +29,8 @@
       <!-- 29-1.7 文章列表包括文章封面、文章信息 -->
       <div class="article-list">
         <!-- 29-1.7.1 v-for遍历文章列表，每个文章项包括文章封面、文章信息 -->
-        <div v-for="item in articleList" :key="item.id" class="article-item">
+        <!-- 29-2.2 文章列表，文章注册点击事件、传递文章id -->
+        <div @click="onDetailArticle(item.id)" v-for="item in articleList" :key="item.id" class="article-item">
           <!-- 29-1.7.3 el-image设置文章封面，调用getCoverImage函数获取完整URL/默认图片 -->
           <el-image :src="getCoverImage(item.coverImage)" style="width: 240px; height: 150px;"></el-image>
           <!-- 29-1.7.4 文章信息包括标题、作者、发布时间、观看人数 -->
@@ -84,6 +86,8 @@
 import { ref, onMounted } from 'vue'
 import { getKnowledgeListAPI } from '@/api/user'
 import { dayjs } from 'element-plus'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const bookUrl = new URL('@/assets/images/book.png', import.meta.url).href
 
 // 推荐列表
@@ -122,6 +126,7 @@ const getArticleList = ()=>{
   }
   // 29-1.4.2 调用getKnowledgeListAPI、传递文章列表查询参数、获取文章列表数据
   getKnowledgeListAPI(params).then(res => {
+    console.log(res.records)
     // 29-1.4.3 将获取到的文章列表数据赋值给articleList
     articleList.value = res.records
   })
@@ -129,7 +134,7 @@ const getArticleList = ()=>{
 
 // 29-1.7.2 获取文章封面，接收文章封面URL，如果URL为空，默认返回默认图片，否则拼接完整URL
 const getCoverImage = (url)=>{
-  return url ? 'http://159.75.169.224:1253' + url : 'https://file.itndedu.com/psychology_ai.png'
+  return url ? 'http://159.75.169.224:1235' + url : 'https://file.itndedu.com/psychology_ai.png'
 }
 
 // 29-1.8.3 页码变化事件
@@ -138,6 +143,11 @@ const onPaginationChange = (page) => {
   pagination.currentPage = page
   // 29-1.8.5 调用onPageSearch函数，重新获取文章数据
   getArticleList()
+}
+
+// 29-2.3 文章详情事件,接收文章id，跳转文章详情页
+const onDetailArticle = (id) => {
+  router.push(`/knowledge/article/${id}`)
 }
 
 onMounted(() => {

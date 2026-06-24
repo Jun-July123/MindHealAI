@@ -69,3 +69,10 @@ export const getKnowledgeListAPI = (params) => {
   })
 }
 
+// 29-2.6 api/user.js配置导出获取知识文章详情接口，接收文章id
+export const getKnowledgeDetailAPI = (id) => {
+  return service({
+    url: `/knowledge/article/${id}`,
+    method: 'get',
+  })
+}
