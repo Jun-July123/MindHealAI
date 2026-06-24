@@ -31,14 +31,19 @@
         <!-- 28-1.4.1 情绪卡片，包括情绪图片及情绪名称 -->
         <!-- 28-1.4.2 v-for遍历情绪选项、el-image绑定情绪图片地址 -->
         <div class="emotion-grid">
-          <div v-for="emotion in emotionOptions" :key="emotion.name" class="emotion-card">
+          <!-- 28-2.1 情绪卡片注册点击事件，传递所点击的情绪名称、选择情绪 -->
+          <!-- 28-2.3 当选择的情绪名称与表单dominantEmotion相同时，添加selected类，表示选中 -->
+          <div 
+            @click="onSelectEmotion(emotion.name)"
+            :class="{'selected': emotion.name === diaryForm.dominantEmotion}"
+            v-for="emotion in emotionOptions" :key="emotion.name" class="emotion-card">
             <el-image :src="emotion.url" style="width: 50px; height: 50px;"></el-image>
             <div class="emotion-name">{{emotion.name }}</div>
           </div>
         </div>
       </div>
 
-      <!-- 28-1.5 情绪详细记录（情绪触发因素、今日感想、生活质量） -->
+      <!-- 28-1.5 情绪详细记录（情绪触发因素、今日感想、生活质量、按钮） -->
       <div class="diary-card">
         <div class="title">详细记录</div>
         <div class="detail-form">
@@ -58,11 +63,9 @@
             <div class="form-label">今日感想</div>
             <el-input 
               v-model="diaryForm.dairyContent" 
-              type="textarea" :rows="5"
-              maxLength="2000" show-word-limit
+              type="textarea" :rows="5" maxLength="2000" show-word-limit
               placeholder="分享你今天的情绪感想吧！"></el-input>
           </div>
-
           <!-- 28-1.5.3 el-select选择生活质量（包括睡眠质量、压力水平）等级 -->
           <!-- v-model分别绑定表单sleepQuality及stressLevel -->
           <div class="life-indicators">
@@ -91,8 +94,10 @@
 
           <!-- 28-1.6 表单按钮（重置及提交表单） -->
           <div class="action-buttons">
-            <el-button>重置</el-button>
-            <el-button type="primary">提交记录</el-button>
+            <!-- 28-2.4 重置按钮注册点击事件 -->
+            <el-button @click="onResetForm">重置</el-button>
+            <!-- 28-2.6 提交按钮注册点击事件 -->
+            <el-button @click="onSubmitForm" type="primary" size="large">提交记录</el-button>
           </div>
 
         </div>
@@ -133,6 +138,39 @@ const emotionOptions = [
   {name: '惊讶',url: new URL('@/assets/images/惊讶.png', import.meta.url).href},
   {name: '困惑',url: new URL('@/assets/images/困惑.png', import.meta.url).href},
 ]
+
+// 28-2.2 选择情绪事件、接收点击的情绪名称、更新表单的主要情绪
+const onSelectEmotion = (emotion) => {
+  diaryForm.dominantEmotion = emotion
+}
+
+// 28-2.5 重置事件、Object.assign将表单内容设置为初始值
+const onResetForm = () => {
+  Object.assign(diaryForm,{
+    diaryDate: dayjs().format('YYYY-MM-DD'),
+    moodScore: null,
+    dominantEmotion: '',
+    emotionTrigger: '',
+    dairyContent: '',
+    sleepQuality: null,
+    stressLevel: null,
+  })
+}
+
+// 28-2.7 提交记录事件
+const onSubmitForm = () => {
+  // 28-2.7.1 如果当前没有进行情绪评分、提示选择情绪评分
+  if (!diaryForm.moodScore) {
+    ElMessage.error('请选择情绪评分')
+    return
+  }
+  // 28-2.7.2 调用提交日志记录接口、传递日记表单
+  postEmotionDiaryAPI(diaryForm).then(()=>{
+    // 28-2.7.3 提交成功、显示提交成功并重置表单
+    ElMessage.success('提交成功')
+    onResetForm()
+  })
+}
 
 
 

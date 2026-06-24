@@ -51,5 +51,12 @@ export const getSessionEmotionAPI = (sessionId) => {
   })
 }
 
-
+// 28-1.7 api/user.js配置导出提交情绪日志接口，接收用户输入的表单信息
+export const postEmotionDiaryAPI = (data) => {
+  return service({
+    url: '/emotion-diary',
+    method: 'post',
+    data
+  })
+}
 
