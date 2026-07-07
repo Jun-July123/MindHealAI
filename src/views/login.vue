@@ -21,7 +21,7 @@
         label-position="top"
         >
         <el-form-item label="用户名/邮箱" prop="username">
-          <el-input v-model="formData.username" size="large" placeholder="请输入用户名/邮箱（后台admin，前台默认XinYuZhiBan）"></el-input>
+          <el-input v-model="formData.username" size="large" placeholder="请输入用户名（后台admin，前台默认XinYuZhiBan）"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input v-model="formData.password" size="large" placeholder="请输入密码（后台密码123456）" type="password" show-password></el-input>
